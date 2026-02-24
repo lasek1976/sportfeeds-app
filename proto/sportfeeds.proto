@@ -1,0 +1,274 @@
+syntax = "proto3";
+
+package sportfeeds;
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum DiffType {
+  EQUAL = 0;
+  ADDED = 1;
+  REMOVED = 2;
+  UPDATED = 3;
+}
+
+enum ProgramStatus {
+  PROGRAM_STATUS_UNKNOWN = 0;
+  PROGRAM_STATUS_ACTIVE = 1;
+  PROGRAM_STATUS_SUSPENDED = 2;
+  PROGRAM_STATUS_NOT_STARTED_RETIRED = 3;
+}
+
+// ============================================================================
+// SHARED STRUCTURES
+// ============================================================================
+
+message DiffKeyValue {
+  string Key = 1;
+  string Value = 2;
+}
+
+message DataProvider {
+  string Code = 1;
+  string ProviderName = 2;
+}
+
+message DataTranslation {
+  string Language = 1;
+  string Value = 2;
+  DataProvider Provider = 3;
+  string ProviderId = 4;
+}
+
+message TranslationList {
+  repeated DataTranslation items = 1;
+}
+
+// ============================================================================
+// BASE OBJECT (fields 101-103)
+// ============================================================================
+
+// Note: In ProtoBuf3, we model inheritance by including base fields in each message
+// BaseDiffObject has:
+// - field 101: DateTime CreatedUTCTime (int64 ticks)
+// - field 102: DiffType
+// - field 103: List<DiffKeyValue> DifferenceProperties
+
+// ============================================================================
+// DIFF MESSAGES
+// ============================================================================
+
+message DataScoreBoardDiff {
+  // m1-m2 (ScoreBoard fields)
+  int32 IdResultType = 1;
+  string ResultValue = 2;
+
+  // BaseDiffObject fields (101-103)
+  int64 CreatedUTCTime = 101;  // DateTime as ticks
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}
+
+message DataTeamDiff {
+  // m1-m10 (Team fields)
+  int32 TeamId = 1;
+  string ProviderTeamId = 2;
+  string TeamName = 3;
+  string ProviderTeamName = 4;
+  int32 IdTeamNumber = 5;
+  // m6 is skipped in C#
+  bool IsGroup = 7;
+  int32 IDSogei = 8;
+  map<string, TranslationList> TeamTranslationDictionary = 9;
+  string FullTeamName = 10;
+
+  // BaseDiffObject fields (101-103)
+  int64 CreatedUTCTime = 101;
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}
+
+message DataStreamingDiff {
+  // m1-m2
+  string StreamProvider = 1;
+  string StreamID = 2;
+
+  // BaseDiffObject fields
+  int64 CreatedUTCTime = 101;
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}
+
+message DataRoundInfo {
+  // Matches actual C# DataRoundInfo class
+  int32 Id = 1;
+  string CupRound = 2;
+  string MatchNumber = 3;
+  int32 Round = 4;
+  string DateInfoValue = 5;
+}
+
+message DataProviderDetailsDiff {
+  // m1-m11
+  DataProvider Provider = 1;
+  string ProviderIDEvent = 2;
+  int32 ProviderIDSport = 3;
+  string ProviderIDCategory = 4;
+  string ProviderIDTournament = 5;
+  // m6 is skipped
+  bool HasStatistics = 7;
+  bool LiveMultiCast = 8;
+  bool LiveScore = 9;
+  DataRoundInfo RoundInfo = 10;
+  int64 ProviderDate = 11;  // DateTime as ticks
+
+  // BaseDiffObject fields
+  int64 CreatedUTCTime = 101;
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}
+
+message DataResultDiff {
+  // Matches actual C# DataResultDiff class
+  int32 ResultId = 1;
+  int32 ResultTypeId = 2;  // short in C# -> int32 in proto
+  int64 UpdatedTime = 3;  // DateTime as ticks
+  int32 ResultValue = 4;
+  bool IsTeam = 5;
+
+  // BaseDiffObject fields
+  int64 CreatedUTCTime = 101;
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}
+
+message DataProposalSuperComboClientDiff {
+  // Matches actual C# DataProposalSuperComboClientDiff class
+  int32 IdClient = 1;
+  string Description = 2;
+
+  // BaseDiffObject fields
+  int64 CreatedUTCTime = 101;
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}
+
+message DataSelectionDiff {
+  // m1-m13
+  int64 IDMarket = 1;
+  int64 IDSelection = 2;
+  int32 IDSelectionType = 3;
+  int32 IDTeam = 4;
+  string SelectionName = 5;
+  map<string, TranslationList> SelectionNameTranslations = 6;
+  int64 IDOdd = 7;
+  double OddValue = 8;  // decimal in C# -> double in proto
+  int32 OnlineCode = 9;
+  double SSpread = 10;  // nullable decimal -> double
+  int32 ResultOverride = 11;  // nullable short -> int32
+  string ProviderIdTeam = 12;
+  ProgramStatus SelectionStatus = 13;
+
+  // BaseDiffObject fields
+  int64 CreatedUTCTime = 101;
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}
+
+message DataMarketDiff {
+  // m1-m22
+  int64 IDEvent = 1;
+  int64 IDMarket = 2;
+  int32 IDMarketType = 3;
+  double Spread = 4;  // decimal -> double
+  int32 GamePlay = 5;
+  bool Outright = 6;
+  int32 MarketWay = 7;
+  // m8 is skipped
+  repeated DataSelectionDiff Selections = 9;
+  map<string, TranslationList> MarketNameTranslations = 10;
+  int32 SpreadMarketType = 11;
+  int32 MarketOrder = 12;  // short -> int32
+  int32 ProgramStatus = 13;
+  int32 MarketBook = 14;  // short -> int32
+  int32 AamsIDMarketType = 15;
+  string AamsMarketName = 16;
+  string AamsExtraInfo = 17;
+  int32 AamsExtraInfoType = 18;
+  int32 AamsGamePlay = 19;
+  int32 AamsLinkedMarketId = 20;  // nullable int
+  string NameOverride = 21;
+  int32 StatisticValue = 22;  // nullable int
+
+  // BaseDiffObject fields
+  int64 CreatedUTCTime = 101;
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}
+
+message DataEventDiff {
+  // m1-m54
+  int32 IDSport = 1;
+  int32 IDCategory = 2;
+  int32 IDTournament = 3;
+  int64 IDEvent = 4;
+  int64 EventDate = 5;  // DateTime as ticks
+  int64 StartDate = 6;
+  int64 EndDate = 7;
+  string EventName = 8;
+  map<string, TranslationList> EventNameTranslations = 9;
+  string MPath = 10;
+  repeated DataProviderDetailsDiff ProviderDetails = 11;
+  bool HasResults = 12;
+  // m13 is skipped
+  repeated DataMarketDiff Markets = 14;
+  repeated DataTeamDiff Teams = 15;
+  repeated DataScoreBoardDiff ScoreBoards = 16;
+  // m17-m24 are skipped in provided code
+  int64 MatchTime = 25;  // TimeSpan as ticks
+  bool StopBetting = 26;
+  int32 IDEventType = 27;
+  string TournamentName = 28;
+  bool IsAntepost = 29;
+  map<string, TranslationList> TournamentNameTranslations = 30;
+  string SportName = 31;
+  map<string, TranslationList> SportNameTranslations = 32;
+  int32 TopLeagueEventRank = 33;
+  string TournamentMPath = 34;
+  map<string, TranslationList> CategoryNameTranslations = 35;
+  string CategoryName = 36;
+  repeated DataResultDiff Results = 37;
+  int32 SportOrder = 38;
+  int32 MostPlacedRank = 39;
+  int32 IDCalendar = 40;
+  string AamsId = 41;
+  int32 AamsIDSport = 42;
+  bool IsSettlement = 43;
+  string CategoryMPath = 44;
+  int32 AamsIDTournament = 45;
+  string AamsTournamentName = 46;
+  DataStreamingDiff Streaming = 47;
+  DiffType SportDiffType = 48;
+  DiffType CategoryDiffType = 49;
+  DiffType TournamentDiffType = 50;
+  repeated DataProposalSuperComboClientDiff PropSuperCombo = 51;
+  int32 MatchType = 52;
+  int32 EventMarketGroupType = 53;
+  bool IsWizardBetBuilderEligible = 54;
+
+  // BaseDiffObject fields
+  int64 CreatedUTCTime = 101;
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}
+
+message DataFeedsDiff {
+  // m1
+  repeated DataEventDiff Events = 1;
+
+  // BaseDiffObject fields
+  int64 CreatedUTCTime = 101;
+  DiffType DiffType = 102;
+  repeated DiffKeyValue DifferenceProperties = 103;
+}

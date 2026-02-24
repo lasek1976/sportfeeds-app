@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sports Calendar - Real-time</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/feed-types.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header Controls -->
+    <div id="controls">
+      <button id="btn-reset" class="btn">Reset to Latest Full</button>
+      <div class="snapshot-loader">
+        <label for="input-snapshot-id">Load Snapshot ID:</label>
+        <input type="number" id="input-snapshot-id" placeholder="Enter ID">
+        <button id="btn-load-snapshot" class="btn">Go</button>
+      </div>
+
+      <!-- Feed Type Toggle -->
+      <div class="feed-type-toggle">
+        <button id="btn-fixed" class="btn-feed-type active" data-type="fixed">
+          🔵 Fixed (Pre-match)
+        </button>
+        <button id="btn-live" class="btn-feed-type" data-type="live">
+          🟢 Live (In-play)
+        </button>
+
+      </div>
+
+      <a href="/admin.html" class="admin-link" target="_blank">📊 Admin</a>
+      <div id="status">
+        <span id="connection-status" class="status-disconnected">⚫ Disconnected</span>
+        <span id="message-type-indicator"></span>
+        <span id="data-status"></span>
+        <span id="message-id-indicator"></span>
+      </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div id="main-layout">
+      <!-- Left: Tree -->
+      <div id="tree-panel">
+        <div class="tree-header">
+          <h2>Sports</h2>
+          <div class="tree-controls">
+            <button id="btn-refresh-tree" class="btn btn-refresh">
+              🔄 Refresh Tree
+              <span id="pending-updates-badge" class="badge hidden">0</span>
+            </button>
+            <label class="auto-refresh-toggle">
+              <input type="checkbox" id="chk-auto-refresh">
+              Auto-refresh
+            </label>
+          </div>
+        </div>
+        <div id="tree-container">
+          <div class="loading">⏳ Waiting for RabbitMQ messages...</div>
+        </div>
+      </div>
+
+      <!-- Center: Event Detail -->
+      <div id="detail-panel">
+        <div id="event-detail">
+          <div class="empty-state">
+            <p>Select an event from the tree to view details</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+  <!-- Application -->
+  <script src="/js/app.js" type="module"></script>
+</body>
+</html>

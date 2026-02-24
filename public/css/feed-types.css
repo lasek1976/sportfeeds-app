@@ -1,0 +1,93 @@
+/* Feed Type Toggle Styles */
+.feed-type-toggle {
+  display: flex;
+  gap: 8px;
+  margin: 0 12px;
+  padding: 4px;
+  background: #f0f0f0;
+  border-radius: 6px;
+}
+
+.btn-feed-type {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-feed-type:hover {
+  background: #e8e8e8;
+}
+
+.btn-feed-type.active {
+  background: #007bff;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.btn-feed-type.active:hover {
+  background: #0056b3;
+}
+
+/* Message Type Indicator */
+#message-type-indicator {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+#message-type-indicator.type-fixed {
+  background: #007bff;
+  color: white;
+}
+
+#message-type-indicator.type-live {
+  background: #28a745;
+  color: white;
+}
+
+
+/* Event badges */
+.event-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.event-badge.fixed {
+  background: #007bff;
+  color: white;
+}
+
+.event-badge.live {
+  background: #28a745;
+  color: white;
+}
+
+/* Tree node styling by type */
+.tree-node.fixed {
+  border-left: 3px solid #007bff;
+}
+
+.tree-node.live {
+  border-left: 3px solid #28a745;
+}
+
+/* Fade effect for filtered items */
+.tree-node.hidden {
+  display: none;
+}
+
+.tree-node.dimmed {
+  opacity: 0.4;
+}

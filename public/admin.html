@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Sports Calendar</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: #333;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #007bff;
+    }
+
+    h2 {
+      margin: 20px 0 10px;
+      font-size: 18px;
+      color: #666;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .stat-card .label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn:hover {
+      background: #0056b3;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    input[type="number"] {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f8f9fa;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px;
+      font-weight: 500;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    tbody tr:hover {
+      background: #f8f9fa;
+    }
+
+    .id-cell {
+      font-family: monospace;
+      color: #007bff;
+      cursor: pointer;
+    }
+
+    .id-cell:hover {
+      text-decoration: underline;
+    }
+
+    .date-cell {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .type-fixed {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .type-live {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .pagination {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Message open modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      max-width: 420px;
+      width: 90%;
+    }
+
+    .modal-box h3 {
+      margin-bottom: 10px;
+    }
+
+    .modal-info {
+      font-family: monospace;
+      font-size: 11px;
+      color: #888;
+      background: #f8f9fa;
+      padding: 8px 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      word-break: break-all;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-danger {
+      background: #6c757d;
+    }
+
+    .btn-danger:hover {
+      background: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-link">← Back to Calendar</a>
+
+  <h1>📊 Sports Calendar Admin</h1>
+
+  <!-- Statistics -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="loading">Loading statistics...</div>
+  </div>
+
+  <!-- Full Messages -->
+  <div class="section">
+    <h2>GridFS Full Messages</h2>
+    <div class="controls">
+      <label>Limit: <input type="number" id="full-limit" value="20" min="1" max="100"></label>
+      <button class="btn" onclick="loadFullMessages()">Load</button>
+      <span id="full-status"></span>
+    </div>
+    <div id="full-table">
+      <div class="loading">Click "Load" to fetch Full messages</div>
+    </div>
+    <div class="pagination" id="full-pagination" style="display: none;">
+      <button class="btn btn-secondary" onclick="loadFullMessages(fullSkip - fullLimit)">← Previous</button>
+      <span>Showing <span id="full-range"></span></span>
+      <button class="btn btn-secondary" onclick="loadFullMessages(fullSkip + fullLimit)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Snapshots -->
+  <div class="section">
+    <h2>FeedsMessages (Snapshots)</h2>
+    <div class="controls">
+      <label>Limit: <input type="number" id="snapshot-limit" value="20" min="1" max="100"></label>
+      <button class="btn" onclick="loadSnapshots()">Load</button>
+      <span id="snapshot-status"></span>
+    </div>
+    <div id="snapshot-table">
+      <div class="loading">Click "Load" to fetch Snapshots</div>
+    </div>
+    <div class="pagination" id="snapshot-pagination" style="display: none;">
+      <button class="btn btn-secondary" onclick="loadSnapshots(snapshotSkip - snapshotLimit)">← Previous</button>
+      <span>Showing <span id="snapshot-range"></span></span>
+      <button class="btn btn-secondary" onclick="loadSnapshots(snapshotSkip + snapshotLimit)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Fixed Pointers -->
+  <div class="section">
+    <h2>Fixed Snapshot Pointers</h2>
+    <div class="controls">
+      <label>Limit: <input type="number" id="fixed-limit" value="20" min="1" max="100"></label>
+      <button class="btn" onclick="loadFixedPointers()">Load</button>
+      <span id="fixed-status"></span>
+    </div>
+    <div id="fixed-table">
+      <div class="loading">Click "Load" to fetch Fixed pointers</div>
+    </div>
+    <div class="pagination" id="fixed-pagination" style="display: none;">
+      <button class="btn btn-secondary" onclick="loadFixedPointers(fixedSkip - fixedLimit)">← Previous</button>
+      <span>Showing <span id="fixed-range"></span></span>
+      <button class="btn btn-secondary" onclick="loadFixedPointers(fixedSkip + fixedLimit)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Live Pointers -->
+  <div class="section">
+    <h2>Live Snapshot Pointers</h2>
+    <div class="controls">
+      <label>Limit: <input type="number" id="live-limit" value="20" min="1" max="100"></label>
+      <button class="btn" onclick="loadLivePointers()">Load</button>
+      <span id="live-status"></span>
+    </div>
+    <div id="live-table">
+      <div class="loading">Click "Load" to fetch Live pointers</div>
+    </div>
+    <div class="pagination" id="live-pagination" style="display: none;">
+      <button class="btn btn-secondary" onclick="loadLivePointers(liveSkip - liveLimit)">← Previous</button>
+      <span>Showing <span id="live-range"></span></span>
+      <button class="btn btn-secondary" onclick="loadLivePointers(liveSkip + liveLimit)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Open Message Modal -->
+  <div class="modal-overlay" id="msg-modal">
+    <div class="modal-box">
+      <h3>Open Message</h3>
+      <p style="color:#666; margin-bottom:12px;">How would you like to open this message?</p>
+      <div class="modal-info" id="msg-modal-info"></div>
+      <div class="modal-actions">
+        <button class="btn" onclick="doDisplayInBrowser()">Display in Browser</button>
+        <button class="btn btn-secondary" onclick="doSaveAsJson()">Save as JSON</button>
+        <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let fullSkip = 0, fullLimit = 20;
+    let snapshotSkip = 0, snapshotLimit = 20;
+    let fixedSkip = 0, fixedLimit = 20;
+    let liveSkip = 0, liveLimit = 20;
+
+    // ---- Modal state ----
+    let _modalType = null;
+    let _modalId = null;
+
+    function openMessage(type, id) {
+      _modalType = type;
+      _modalId = id;
+      const label = type === 'full' ? 'GridFS Full Message' : 'FeedsMessage Snapshot';
+      document.getElementById('msg-modal-info').textContent = `${label} — ID: ${id}`;
+      document.getElementById('msg-modal').classList.add('visible');
+    }
+
+    function closeModal() {
+      document.getElementById('msg-modal').classList.remove('visible');
+    }
+
+    function _messageUrl() {
+      return _modalType === 'full'
+        ? `/api/admin/message/full/${_modalId}`
+        : `/api/admin/message/snapshot/${_modalId}`;
+    }
+
+    function doDisplayInBrowser() {
+      closeModal();
+      window.open(_messageUrl(), '_blank');
+    }
+
+    function doSaveAsJson() {
+      closeModal();
+      const filename = `${_modalType}_${_modalId}.json`;
+      const link = document.createElement('a');
+      link.href = _messageUrl();
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('msg-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    // Load statistics on page load
+    loadStats();
+
+    async function loadStats() {
+      try {
+        const response = await fetch('/api/admin/stats');
+        const data = await response.json();
+
+        if (data.success) {
+          const stats = data.stats;
+          document.getElementById('stats-grid').innerHTML = `
+            <div class="stat-card">
+              <div class="label">Full Messages</div>
+              <div class="value">${stats.fullMessages.toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Snapshots</div>
+              <div class="value">${stats.snapshots.toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Fixed Pointers</div>
+              <div class="value">${stats.fixedPointers.toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Live Pointers</div>
+              <div class="value">${stats.livePointers.toLocaleString()}</div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+        document.getElementById('stats-grid').innerHTML = '<div class="error">Failed to load statistics</div>';
+      }
+    }
+
+    async function loadFullMessages(skip = 0) {
+      fullLimit = parseInt(document.getElementById('full-limit').value, 10);
+      fullSkip = Math.max(0, skip);
+
+      document.getElementById('full-status').textContent = 'Loading...';
+
+      try {
+        const response = await fetch(`/api/admin/browse/full?limit=${fullLimit}&skip=${fullSkip}`);
+        const data = await response.json();
+
+        if (data.success) {
+          renderFullTable(data.messages);
+          document.getElementById('full-status').textContent = '';
+          document.getElementById('full-range').textContent = `${fullSkip + 1}-${fullSkip + data.count}`;
+          document.getElementById('full-pagination').style.display = 'flex';
+        }
+      } catch (error) {
+        console.error('Failed to load Full messages:', error);
+        document.getElementById('full-table').innerHTML = '<div class="error">Failed to load Full messages</div>';
+      }
+    }
+
+    async function loadSnapshots(skip = 0) {
+      snapshotLimit = parseInt(document.getElementById('snapshot-limit').value, 10);
+      snapshotSkip = Math.max(0, skip);
+
+      document.getElementById('snapshot-status').textContent = 'Loading...';
+
+      try {
+        const response = await fetch(`/api/admin/browse/snapshots?limit=${snapshotLimit}&skip=${snapshotSkip}`);
+        const data = await response.json();
+
+        if (data.success) {
+          renderSnapshotTable(data.snapshots);
+          document.getElementById('snapshot-status').textContent = '';
+          document.getElementById('snapshot-range').textContent = `${snapshotSkip + 1}-${snapshotSkip + data.count}`;
+          document.getElementById('snapshot-pagination').style.display = 'flex';
+        }
+      } catch (error) {
+        console.error('Failed to load Snapshots:', error);
+        document.getElementById('snapshot-table').innerHTML = '<div class="error">Failed to load Snapshots</div>';
+      }
+    }
+
+    async function loadFixedPointers(skip = 0) {
+      fixedLimit = parseInt(document.getElementById('fixed-limit').value, 10);
+      fixedSkip = Math.max(0, skip);
+
+      document.getElementById('fixed-status').textContent = 'Loading...';
+
+      try {
+        const response = await fetch(`/api/admin/browse/pointers/fixed?limit=${fixedLimit}&skip=${fixedSkip}`);
+        const data = await response.json();
+
+        if (data.success) {
+          renderPointerTable(data.pointers, 'fixed-table');
+          document.getElementById('fixed-status').textContent = '';
+          document.getElementById('fixed-range').textContent = `${fixedSkip + 1}-${fixedSkip + data.count}`;
+          document.getElementById('fixed-pagination').style.display = 'flex';
+        }
+      } catch (error) {
+        console.error('Failed to load Fixed pointers:', error);
+        document.getElementById('fixed-table').innerHTML = '<div class="error">Failed to load Fixed pointers</div>';
+      }
+    }
+
+    async function loadLivePointers(skip = 0) {
+      liveLimit = parseInt(document.getElementById('live-limit').value, 10);
+      liveSkip = Math.max(0, skip);
+
+      document.getElementById('live-status').textContent = 'Loading...';
+
+      try {
+        const response = await fetch(`/api/admin/browse/pointers/live?limit=${liveLimit}&skip=${liveSkip}`);
+        const data = await response.json();
+
+        if (data.success) {
+          renderPointerTable(data.pointers, 'live-table');
+          document.getElementById('live-status').textContent = '';
+          document.getElementById('live-range').textContent = `${liveSkip + 1}-${liveSkip + data.count}`;
+          document.getElementById('live-pagination').style.display = 'flex';
+        }
+      } catch (error) {
+        console.error('Failed to load Live pointers:', error);
+        document.getElementById('live-table').innerHTML = '<div class="error">Failed to load Live pointers</div>';
+      }
+    }
+
+    function renderFullTable(messages) {
+      if (messages.length === 0) {
+        document.getElementById('full-table').innerHTML = '<div class="loading">No Full messages found</div>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Filename</th>
+              <th>Upload Date</th>
+              <th>Size</th>
+              <th>Type</th>
+              <th>Aliases</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      messages.forEach(msg => {
+        const date = new Date(msg.uploadDate).toLocaleString();
+        const size = (msg.length / 1024 / 1024).toFixed(2) + ' MB';
+        const typeClass = msg.type === 'Fixed' ? 'type-fixed' : 'type-live';
+
+        html += `
+          <tr>
+            <td class="id-cell" onclick="openMessage('full', '${msg.id}')" title="Click to open">${msg.id}</td>
+            <td>${msg.filename}</td>
+            <td class="date-cell">${date}</td>
+            <td>${size}</td>
+            <td><span class="type-badge ${typeClass}">${msg.type}</span></td>
+            <td>${msg.aliases || '-'}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('full-table').innerHTML = html;
+    }
+
+    function renderSnapshotTable(snapshots) {
+      if (snapshots.length === 0) {
+        document.getElementById('snapshot-table').innerHTML = '<div class="loading">No Snapshots found</div>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Format</th>
+              <th>Diff Type</th>
+              <th>Created Time</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      snapshots.forEach(snap => {
+        const date = new Date(snap.createdTime).toLocaleString();
+
+        html += `
+          <tr>
+            <td class="id-cell" onclick="openMessage('snapshot', ${snap.id})" title="Click to open">${snap.id}</td>
+            <td>${snap.format || '-'}</td>
+            <td>${snap.diffType || '-'}</td>
+            <td class="date-cell">${date}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('snapshot-table').innerHTML = html;
+    }
+
+    function renderPointerTable(pointers, containerId) {
+      if (pointers.length === 0) {
+        document.getElementById(containerId).innerHTML = '<div class="loading">No pointers found</div>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Message ID</th>
+              <th>Feeds Type</th>
+              <th>Created Time</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      pointers.forEach(pointer => {
+        const date = new Date(pointer.createdTime).toLocaleString();
+
+        html += `
+          <tr>
+            <td>${pointer.id}</td>
+            <td class="id-cell" onclick="openMessage('snapshot', ${pointer.messageId})" title="Click to open">${pointer.messageId}</td>
+            <td>${pointer.feedsType}</td>
+            <td class="date-cell">${date}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById(containerId).innerHTML = html;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "name": "sportfeeds-app",
+  "version": "1.0.0",
+  "description": "Real-time Sports Calendar Application",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "lodash": "^4.17.21",
+    "mongodb": "^6.3.0",
+    "protobufjs": "^7.2.5",
+    "socket.io": "^4.6.1"
+  },
+  "keywords": [
+    "sports",
+    "calendar",
+    "real-time",
+    "mongodb",
+    "socketio"
+  ],
+  "author": "",
+  "license": "MIT"
+}
