@@ -84,7 +84,11 @@ export function renderEventDetail(event) {
     <div class="event-detail-content">
       <div class="event-header">
         <h1>${_.escape(eventName)} <span class="entity-id">(${eventId})</span></h1>
-        <div class="event-date">${_.escape(eventDate)}</div>
+        <div class="event-date">
+          ${_.escape(eventDate)}
+          <span class="markets-expand-all" title="Expand all markets">⊞</span>
+          <span class="markets-collapse-all" title="Collapse all markets">⊟</span>
+        </div>
       </div>
   `;
 
@@ -159,7 +163,7 @@ export function renderEventDetail(event) {
                         `Market`;
 
       html += `
-        <div class="market expanded" data-market-id="${marketId}">
+        <div class="market collapsed" data-market-id="${marketId}">
           <div class="market-header">
             <span class="market-toggle"></span>
             <span class="market-name">${_.escape(marketName)} <span class="entity-id">(${marketId})</span></span>
@@ -185,7 +189,7 @@ export function renderEventDetail(event) {
 
           let oddDisplay = oddValue;
           let oddIndicator = '';
-          if (oddValue === 0) {
+          if (oddValue >= 0 && oddValue < 1) {
             oddIndicator = '<span class="odd-locked">🔒</span>';
           }
 
@@ -235,6 +239,14 @@ function getScoreboardLabel(idResultType) {
  * Attach market and scoreboards expand/collapse handlers
  */
 function attachToggleHandlers() {
+  $('.markets-expand-all').on('click', function() {
+    $('.market').removeClass('collapsed').addClass('expanded');
+  });
+
+  $('.markets-collapse-all').on('click', function() {
+    $('.market').removeClass('expanded').addClass('collapsed');
+  });
+
   $('.market-header').on('click', function() {
     const $market = $(this).parent();
     $market.toggleClass('expanded collapsed');

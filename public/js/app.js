@@ -22,6 +22,7 @@ let waitingForFull = false; // Track if we're waiting for a Full message after r
 let fullMessageId = null; // Track the message ID of the Full message we're waiting for
 let isReceivingChunkedFull = false; // Track if we're receiving a chunked Full message (block other messages)
 let receivingFullMessageId = null; // The message ID of the chunked Full being received
+let persistentHighlights = {}; // { [eventId]: { diffType, messageId } } — survives tree rebuilds
 
 // Initialize Socket.io
 function initSocket() {
@@ -370,17 +371,26 @@ function processMessage(data, metadata, feedsType, isFull = false) {
     data.Events.forEach(event => {
       event.feedsType = feedsType;
       const diffType = event.DiffType ?? event.diffType ?? 0;
+      const eventId = event.IDEvent || event.idEvent;
       if (diffType === 1 || diffType === 2) {
         event._messageId = metadata.messageId;
+      }
+      if (diffType === 2) {
+        console.log(`🔴 Event ${eventId} marked as REMOVED | Msg: ${metadata.messageId} | ${new Date().toLocaleString()}`);
+      }
+      // Track persistent highlights so outlines survive tree rebuilds
+      if (diffType !== 0 && eventId !== undefined) {
+        persistentHighlights[eventId] = { diffType, messageId: metadata.messageId };
       }
     });
   }
 
   // Apply to current data
   if (isFull) {
-    // Full snapshot - replace all data
+    // Full snapshot - replace all data and clear any stale highlights
     console.log(`🔄 Loading Full snapshot (${data.Events?.length || 0} events)`);
     currentData = data;
+    persistentHighlights = {};
   } else {
     // Incremental update - merge with existing data
     const isFirstLoad = !currentData || !currentData.Events;
@@ -419,6 +429,7 @@ function processMessage(data, metadata, feedsType, isFull = false) {
     // Also update event detail panel for incremental messages in auto-refresh mode
     if (!isFull && data.Events) {
       applyTreeMessageBadges(data.Events);
+      applyTreeHighlights(data.Events);  // Show red/green/yellow outlines in auto-refresh too
       if (currentEventId) {
         data.Events.forEach(event => {
           updateEventDetail(event, currentEventId, metadata.messageId);
@@ -492,9 +503,21 @@ function loadLatestFull() {
 }
 
 // Load snapshot by ID
-function loadSnapshotById(id) {
-  console.log(`📨 Requesting Snapshot ${id}...`);
-  socket.emit('request:snapshot', { id });
+function loadSnapshotById(id, feedsType) {
+  console.log(`📨 Requesting Snapshot ${id} (${feedsType})...`);
+  socket.emit('request:snapshot', { id, feedsType });
+}
+
+// Re-apply highlights that must survive tree rebuilds (e.g. REMOVED events stay red)
+function applyPersistentHighlights() {
+  const entries = Object.entries(persistentHighlights);
+  if (entries.length === 0) return;
+  const events = entries.map(([id, info]) => ({
+    IDEvent: isNaN(Number(id)) ? id : Number(id),
+    _messageId: info.messageId,
+    DiffType: info.diffType
+  }));
+  applyTreeHighlights(events);
 }
 
 // Update UI based on current filter
@@ -517,6 +540,9 @@ function updateUI() {
   // Rebuild tree with filtered events
   buildTree(filteredEvents);
 
+  // Restore persistent highlights after tree rebuild (REMOVED stays red, etc.)
+  applyPersistentHighlights();
+
   // Update event detail if currently selected event is filtered out
   if (currentEventId) {
     const event = filteredEvents.find(e => e.IDEvent === currentEventId);
@@ -529,7 +555,7 @@ function updateUI() {
 
 // Update data status display
 function updateDataStatus(metadata, feedsType) {
-  const eventCount = currentData?.Events?.length || 0;
+  const eventCount = currentData?.Events?.filter(e => (e.DiffType ?? e.diffType ?? 0) !== 2).length || 0;
   const typeLabel = feedsType || 'Unknown';
   $('#data-status').text(`${typeLabel}: ${eventCount} events`);
 
@@ -679,6 +705,7 @@ $(document).ready(() => {
     queuedMessages = []; // Clear queued messages
     isReceivingChunkedFull = false; // Clear chunked Full blocking flag
     receivingFullMessageId = null; // Clear receiving Full message ID
+    persistentHighlights = {}; // Clear highlight state
     resetPendingUpdates();
     $('#tree-container').html('<div class="loading">⏳ Loading Fresh Full messages...</div>');
     $('#data-status').text('⏳ Requesting Fresh Full from bridge...');
@@ -691,7 +718,14 @@ $(document).ready(() => {
       alert('Please enter a valid Snapshot ID');
       return;
     }
-    loadSnapshotById(parseInt(id, 10));
+    // Guard: a Full snapshot must be loaded first (tree must exist)
+    if (!currentData || !currentData.Events || currentData.Events.length === 0) {
+      alert('Please load a Full snapshot first before loading a Snapshot ID.');
+      return;
+    }
+    // Use the current Fixed / Live filter as feed-type context
+    const feedsType = feedTypeManager && feedTypeManager.getFilter() === 'live' ? 'Live' : 'Fixed';
+    loadSnapshotById(parseInt(id, 10), feedsType);
   });
 
   // Allow Enter key in snapshot input

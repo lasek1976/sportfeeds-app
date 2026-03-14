@@ -1,8 +1,4 @@
-import {
-  getLatestFull,
-  getSnapshotById
-} from '../services/feedsService.js';
-import { onFixedMessage, onLiveMessage } from '../services/rabbitMQService.js';
+import { onFixedMessage, onLiveMessage, deserializeProtoBytes } from '../services/rabbitMQService.js';
 import { sendControlMessage } from '../config/rabbitmq.js';
 
 // Maximum events per chunk to avoid "Invalid string length" error
@@ -147,23 +143,38 @@ export function initFeedsSocket(io) {
     });
 
     // Handle request for specific Snapshot message
+    // Proxies to the .NET bridge for deserialization (same fix as Admin panel).
     socket.on('request:snapshot', async (payload) => {
       try {
-        const { id } = payload;
+        const { id, feedsType = 'Fixed' } = payload;
         if (!id || isNaN(parseInt(id, 10))) {
           throw new Error('Invalid snapshot ID');
         }
 
-        console.log(`📨 Client ${socket.id} requested Snapshot ${id}`);
-        const result = await getSnapshotById(parseInt(id, 10));
+        const bridgeUrl = process.env.BRIDGE_URL || 'http://localhost:5100';
+        console.log(`📨 Client ${socket.id} requested Snapshot ${id} (${feedsType}) via bridge`);
 
-        socket.emit('feeds:snapshot', {
-          success: true,
-          metadata: result.metadata,
-          data: result.data
-        });
+        const upstream = await fetch(`${bridgeUrl}/api/message/snapshot/${id}/proto`);
+        if (!upstream.ok) {
+          throw new Error(`Bridge error ${upstream.status}: ${await upstream.text()}`);
+        }
 
-        console.log(`✓ Sent Snapshot ${id} to ${socket.id}`);
+        const arrayBuffer = await upstream.arrayBuffer();
+        const dataFeedsDiff = deserializeProtoBytes(Buffer.from(arrayBuffer));
+        console.log(`✓ Bridge deserialized Snapshot ${id}: ${dataFeedsDiff.Events?.length || 0} events`);
+
+        const metadata = { messageId: id, diffType: 'snapshot', feedsType };
+        const eventName = feedsType === 'Live' ? 'feeds:live' : 'feeds:fixed';
+        const chunks = chunkMessage(dataFeedsDiff, metadata, feedsType);
+
+        for (let i = 0; i < chunks.length; i++) {
+          socket.emit(eventName, chunks[i]);
+          if (chunks.length > 5 && i < chunks.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+          }
+        }
+
+        console.log(`✓ Sent Snapshot ${id} to ${socket.id} as ${eventName} (${chunks.length} chunk(s))`);
       } catch (error) {
         console.error(`✗ Error sending Snapshot to ${socket.id}:`, error.message);
         socket.emit('error', {

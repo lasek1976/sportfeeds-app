@@ -216,6 +216,24 @@ body {
   font-size: 12px;
 }
 
+/* Sport toggle: blue, large filled triangles */
+[data-type="sport"] > .tree-node-header .tree-toggle {
+  color: #007bff;
+  font-size: 15px;
+}
+
+/* Category toggle: teal, small filled triangles */
+[data-type="category"] > .tree-node-header .tree-toggle {
+  color: #17a2b8;
+  font-size: 13px;
+}
+
+/* Tournament toggle: orange, chevrons */
+[data-type="tournament"] > .tree-node-header .tree-toggle {
+  color: #fd7e14;
+  font-size: 13px;
+}
+
 .tree-node-children {
   display: none;
 }
@@ -224,6 +242,7 @@ body {
   display: block;
 }
 
+/* Default expand/collapse icons (fallback) */
 .tree-node.expanded > .tree-node-header .tree-toggle::before {
   content: '⊖';
 }
@@ -232,9 +251,34 @@ body {
   content: '⊕';
 }
 
+/* Sport: large solid triangles ▼ / ▶ */
+[data-type="sport"].expanded > .tree-node-header .tree-toggle::before {
+  content: '▼';
+}
+[data-type="sport"].collapsed > .tree-node-header .tree-toggle::before {
+  content: '▶';
+}
+
+/* Category: small solid triangles ▾ / ▸ */
+[data-type="category"].expanded > .tree-node-header .tree-toggle::before {
+  content: '▾';
+}
+[data-type="category"].collapsed > .tree-node-header .tree-toggle::before {
+  content: '▸';
+}
+
+/* Tournament: chevrons ⌄ / › */
+[data-type="tournament"].expanded > .tree-node-header .tree-toggle::before {
+  content: '⌄';
+}
+[data-type="tournament"].collapsed > .tree-node-header .tree-toggle::before {
+  content: '›';
+}
+
 .tree-node-leaf > .tree-node-header .tree-toggle::before {
-  content: '•';
-  font-size: 10px;
+  content: '▹';
+  font-size: 12px;
+  color: #6c757d;
 }
 
 .event-count {
@@ -242,6 +286,21 @@ body {
   font-size: 12px;
   font-weight: normal;
   margin-left: 4px;
+}
+
+.sport-expand-all,
+.sport-collapse-all {
+  margin-left: 6px;
+  font-size: 14px;
+  color: #adb5bd;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sport-expand-all:hover,
+.sport-collapse-all:hover {
+  color: #007bff;
 }
 
 /* Event Detail */
@@ -266,6 +325,22 @@ body {
 .event-header .event-date {
   color: #666;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.markets-expand-all,
+.markets-collapse-all {
+  font-size: 14px;
+  color: #adb5bd;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.markets-expand-all:hover,
+.markets-collapse-all:hover {
+  color: #007bff;
 }
 
 /* Teams Section */

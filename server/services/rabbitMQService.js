@@ -156,6 +156,18 @@ function deserializeProtoBuf(protoBytes) {
 }
 
 /**
+ * Deserialize raw Google.Protobuf binary bytes (application/octet-stream from bridge).
+ * Produces the same plain-object format as messages arriving via RabbitMQ.
+ *
+ * @param {Buffer} buffer - Google.Protobuf binary from bridge /api/message/snapshot/{id}/proto
+ * @returns {Object} Deserialized DataFeedsDiff object
+ */
+export function deserializeProtoBytes(buffer) {
+  if (!DataFeedsDiffType) throw new Error('ProtoBuf schema not initialized. Call initProtoBuf() first.');
+  return deserializeProtoBuf(buffer);
+}
+
+/**
  * Stop consuming messages
  */
 export async function stopConsumer() {

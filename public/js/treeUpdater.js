@@ -42,6 +42,7 @@ export function applyTreeHighlights(events) {
       case DiffType.ADDED:
         $eventNode.addClass('highlight-added');
         setTreeMsgBadge($eventNode, event._messageId);
+        $eventNode.parents('.tree-node').removeClass('collapsed').addClass('expanded');
         added++;
         console.log(`  🟢 Event ${eventId} - ADDED (green outline)`);
         break;
@@ -50,7 +51,7 @@ export function applyTreeHighlights(events) {
         $eventNode.addClass('highlight-removed');
         setTreeMsgBadge($eventNode, event._messageId);
         removed++;
-        console.log(`  🔴 Event ${eventId} - REMOVED (red outline)`);
+        console.log(`  🔴 Event ${eventId} - REMOVED (red outline) | Msg: ${event._messageId ?? '?'} | ${new Date().toLocaleString()}`);
         break;
 
       case DiffType.UPDATED:

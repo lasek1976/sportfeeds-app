@@ -131,7 +131,7 @@ export function buildTree(events) {
   sports.forEach(sport => {
     // Count total events for this sport
     const sportEvents = events.filter(e => (e.IDSport || e.idSport) === sport.id);
-    const eventCount = sportEvents.length;
+    const eventCount = sportEvents.filter(e => (e.DiffType ?? e.diffType ?? 0) !== 2).length;
 
     // Get categories for this sport (try both camelCase and PascalCase)
     const categories = _.uniqBy(
@@ -153,6 +153,8 @@ export function buildTree(events) {
         <div class="tree-node-header">
           <span class="tree-toggle"></span>
           <span class="tree-label">${_.escape(sport.name)} <span class="event-count">(${eventCount})</span></span>
+          <span class="sport-expand-all" title="Expand all">⊞</span>
+          <span class="sport-collapse-all" title="Collapse all">⊟</span>
         </div>
         <div class="tree-node-children">
     `;
@@ -251,6 +253,20 @@ export function buildTree(events) {
  * Attach click handlers to tree nodes
  */
 function attachTreeHandlers() {
+  // Expand all nodes inside a sport
+  $('.sport-expand-all').on('click', function(e) {
+    e.stopPropagation();
+    const $sport = $(this).closest('.tree-node[data-type="sport"]');
+    $sport.add($sport.find('.tree-node')).removeClass('collapsed').addClass('expanded');
+  });
+
+  // Collapse all nodes inside a sport
+  $('.sport-collapse-all').on('click', function(e) {
+    e.stopPropagation();
+    const $sport = $(this).closest('.tree-node[data-type="sport"]');
+    $sport.add($sport.find('.tree-node')).removeClass('expanded').addClass('collapsed');
+  });
+
   // Toggle expand/collapse
   $('.tree-node-header').on('click', function(e) {
     e.stopPropagation();
