@@ -1,4 +1,4 @@
-import { buildTree, collapseAll } from './treeBuilder.js';
+import { buildTree, collapseAll, attachSearchHandlers, filterTreeByEventId } from './treeBuilder.js';
 import { renderEventDetail, clearEventDetail } from './eventRenderer.js';
 import { applySnapshotDiff } from './diffApplier.js';
 import { FeedTypeManager } from './feedTypeManager.js';
@@ -29,7 +29,7 @@ function initSocket() {
   socket = io();
 
   socket.on('connect', () => {
-    console.log('✓ Connected to server');
+    console.log('Connected to server');
     $('#connection-status')
       .removeClass('status-disconnected')
       .addClass('status-connected')
@@ -38,7 +38,7 @@ function initSocket() {
     // Check if we were in the middle of receiving chunks
     const incompleteChunks = Object.keys(chunkedMessages);
     if (incompleteChunks.length > 0) {
-      console.warn('⚠️ Reconnected with incomplete chunks - requesting fresh Full');
+      console.warn('Reconnected with incomplete chunks - requesting fresh Full');
       console.log(`   Incomplete message IDs: ${incompleteChunks.join(', ')}`);
 
       // Clear incomplete chunks and unblock message processing
@@ -53,12 +53,12 @@ function initSocket() {
       fullMessageId = null;
       socket.emit('request:full');
 
-      $('#data-status').text('⏳ Reconnected - requesting fresh Full...');
+      $('#data-events-count').text('⏳ Reconnected - requesting fresh Full...');
     }
   });
 
   socket.on('disconnect', () => {
-    console.log('✗ Disconnected from server');
+    console.log('Disconnected from server');
     $('#connection-status')
       .removeClass('status-connected')
       .addClass('status-disconnected')
@@ -66,14 +66,14 @@ function initSocket() {
   });
 
   socket.on('feeds:full', (response) => {
-    console.log('📥 Received Full message:', response);
+    console.log('Received Full message:', response);
     if (response.success) {
       handleFullMessage(response.data, response.metadata);
     }
   });
 
   socket.on('feeds:snapshot', (response) => {
-    console.log('📥 Received Snapshot message:', response);
+    console.log('Received Snapshot message:', response);
     if (response.success) {
       handleSnapshotMessage(response.data, response.metadata);
     }
@@ -81,7 +81,7 @@ function initSocket() {
 
   // Handle Fixed messages (pre-match)
   socket.on('feeds:fixed', (response) => {
-    console.log(`📥 Received Fixed message - ID: ${response.metadata?.messageId}`, response);
+    console.log(`Received Fixed message - ID: ${response.metadata?.messageId}`, response);
     if (response.success) {
       handleFeedMessage(response.data, response.metadata, 'Fixed');
     }
@@ -89,7 +89,7 @@ function initSocket() {
 
   // Handle Live messages (in-play)
   socket.on('feeds:live', (response) => {
-    console.log(`📥 Received Live message - ID: ${response.metadata?.messageId}`, response);
+    console.log(`Received Live message - ID: ${response.metadata?.messageId}`, response);
     if (response.success) {
       handleFeedMessage(response.data, response.metadata, 'Live');
     }
@@ -103,11 +103,11 @@ function initSocket() {
 
 // Handle Feed messages (Fixed or Live from RabbitMQ)
 function handleFeedMessage(data, metadata, feedsType) {
-  console.log(`📨 Received ${feedsType} feed - Message ID: ${metadata.messageId}, DiffType: ${metadata.diffType}, Chunked: ${metadata.isChunked || false}`);
+  console.log(`Received ${feedsType} feed - Message ID: ${metadata.messageId}, DiffType: ${metadata.diffType}, Chunked: ${metadata.isChunked || false}`);
 
   // If we're receiving a chunked Full message, block all other messages
   if (isReceivingChunkedFull && metadata.messageId !== receivingFullMessageId) {
-    console.log(`🚫 Blocking message ${metadata.messageId} - currently receiving chunked Full message ${receivingFullMessageId}`);
+    console.log(`Blocking message ${metadata.messageId} - currently receiving chunked Full message ${receivingFullMessageId}`);
     return; // Discard this message
   }
 
@@ -115,7 +115,16 @@ function handleFeedMessage(data, metadata, feedsType) {
   if (metadata.isChunked) {
     const { messageId, chunkIndex, totalChunks, totalEvents } = metadata;
 
-    console.log(`📦 Received chunk ${chunkIndex + 1}/${totalChunks} for message ${messageId} (${data.Events?.length || 0} events)`);
+    // Discard stale chunks from a second/duplicate stream for a message already fully processed.
+    // This happens when a reconnect triggers a fresh request:full while the previous chunked
+    // stream is still in-flight — the two streams interleave and orphan chunks arrive after
+    // the first merge, which would re-open chunkedMessages and lock isReceivingChunkedFull forever.
+    if (consumedMessageIds.has(messageId)) {
+      console.log(`Discarding stale chunk ${chunkIndex + 1}/${totalChunks} for already-consumed message ${messageId}`);
+      return;
+    }
+
+    console.log(`Received chunk ${chunkIndex + 1}/${totalChunks} for message ${messageId} (${data.Events?.length || 0} events)`);
 
     // Initialize storage for this message if needed
     if (!chunkedMessages[messageId]) {
@@ -127,17 +136,14 @@ function handleFeedMessage(data, metadata, feedsType) {
       };
 
       // Detect if this is the first chunk of a Full message
-      // Use same detection logic as below
       const hasCompleteDiffType = metadata.diffType && (
         metadata.diffType.includes('complete') ||
         metadata.diffType.includes('Complete')
       );
-      const isExpectedFull = waitingForFull && !fullMessageId;
-      const isLargeMessage = totalEvents > 500;
-      const isChunkedFull = hasCompleteDiffType || isExpectedFull || (waitingForFull && isLargeMessage);
+      const isChunkedFull = hasCompleteDiffType;
 
       if (isChunkedFull) {
-        console.log(`🔒 Starting to receive chunked Full message ${messageId} - blocking other messages`);
+        console.log(`Starting to receive chunked Full message ${messageId} - blocking other messages`);
         isReceivingChunkedFull = true;
         receivingFullMessageId = messageId;
       }
@@ -152,12 +158,12 @@ function handleFeedMessage(data, metadata, feedsType) {
     const isComplete = receivedCount === totalChunks;
 
     if (!isComplete) {
-      console.log(`⏳ Waiting for remaining chunks (${receivedCount}/${totalChunks} received)`);
+      console.log(`Waiting for remaining chunks (${receivedCount}/${totalChunks} received)`);
       return;
     }
 
     // All chunks received - merge them
-    console.log(`✓ All ${totalChunks} chunks received for message ${messageId} - merging ${totalEvents} events`);
+    console.log(`All ${totalChunks} chunks received for message ${messageId} - merging ${totalEvents} events`);
 
     const mergedEvents = allChunks.flat();
     data = {
@@ -167,7 +173,7 @@ function handleFeedMessage(data, metadata, feedsType) {
 
     // If this was a chunked Full message, unblock other messages
     if (isReceivingChunkedFull && messageId === receivingFullMessageId) {
-      console.log(`🔓 Chunked Full message ${messageId} complete - resuming normal message processing`);
+      console.log(`Chunked Full message ${messageId} complete - resuming normal message processing`);
       isReceivingChunkedFull = false;
       receivingFullMessageId = null;
     }
@@ -175,13 +181,13 @@ function handleFeedMessage(data, metadata, feedsType) {
     // Clean up
     delete chunkedMessages[messageId];
 
-    console.log(`✓ Merged ${mergedEvents.length} events from ${totalChunks} chunks`);
+    console.log(`Merged ${mergedEvents.length} events from ${totalChunks} chunks`);
   }
 
   // Check for duplicate message AFTER chunk merging
   // (chunked messages share the same messageId, so we only check once all chunks are merged)
   if (consumedMessageIds.has(metadata.messageId)) {
-    console.log(`⏭️ Discarding duplicate ${feedsType} message - ID: ${metadata.messageId} (already consumed)`);
+    console.log(`Discarding duplicate ${feedsType} message - ID: ${metadata.messageId} (already consumed)`);
     return;
   }
 
@@ -192,26 +198,20 @@ function handleFeedMessage(data, metadata, feedsType) {
     metadata.diffType.includes('Complete')
   );
 
-  // Method 2: Check if this is the first large message after request:full
-  const isExpectedFull = waitingForFull && !fullMessageId;
-
-  // Method 3: Check if this is a very large message (>500 events likely means Full)
-  const isLargeMessage = (data.Events?.length || 0) > 500;
-
-  // A message is considered "Full" if any of these conditions are true
-  const isFull = hasCompleteDiffType || isExpectedFull || (waitingForFull && isLargeMessage);
+  // A message is "Full" only if its diffType contains "complete" (e.g. 21_complete, 22_complete)
+  const isFull = hasCompleteDiffType;
 
   // If this is a Full message after request:full, track its ID
   if (isFull && waitingForFull) {
     fullMessageId = metadata.messageId;
     waitingForFull = false; // Stop waiting
-    console.log(`✅ Received Full snapshot - Message ID: ${fullMessageId} (${data.Events?.length || 0} events)`);
+    console.log(`Received Full snapshot - Message ID: ${fullMessageId} (${data.Events?.length || 0} events)`);
   }
 
   // If Full snapshot not loaded yet and this is NOT a Full message, queue it
   // DON'T mark as consumed yet - will be marked when processed after Full loads
   if (!isFullLoaded && !isFull) {
-    console.log(`⏸️ Queuing ${feedsType} message ${metadata.messageId} (waiting for Full snapshot first)`);
+    console.log(`Queuing ${feedsType} message ${metadata.messageId} (waiting for Full snapshot first)`);
     queuedMessages.push({ data, metadata, feedsType });
     return;
   }
@@ -225,14 +225,14 @@ function handleFeedMessage(data, metadata, feedsType) {
   // If this was a Full message, mark as loaded and process queued messages
   if (isFull && !isFullLoaded) {
     isFullLoaded = true;
-    console.log(`✅ Full snapshot loaded! Processing ${queuedMessages.length} queued messages...`);
+    console.log(`Full snapshot loaded! Processing ${queuedMessages.length} queued messages...`);
 
     // Process all queued messages
     const queued = [...queuedMessages];
     queuedMessages = [];
 
     queued.forEach(msg => {
-      console.log(`📤 Processing queued message ${msg.metadata.messageId}`);
+      console.log(`Processing queued message ${msg.metadata.messageId}`);
 
       // Mark as consumed before processing
       consumedMessageIds.add(msg.metadata.messageId);
@@ -359,7 +359,7 @@ function mergeEvent(existingEvent, newEvent) {
 // Process a single message (extracted from handleFeedMessage)
 function processMessage(data, metadata, feedsType, isFull = false) {
 
-  console.log(`🔧 Processing ${feedsType} message ${metadata.messageId} with ${data.Events?.length || 0} events (Full: ${isFull})`);
+  console.log(`Processing ${feedsType} message ${metadata.messageId} with ${data.Events?.length || 0} events (Full: ${isFull})`);
 
   // Record update time
   if (feedTypeManager) {
@@ -376,7 +376,7 @@ function processMessage(data, metadata, feedsType, isFull = false) {
         event._messageId = metadata.messageId;
       }
       if (diffType === 2) {
-        console.log(`🔴 Event ${eventId} marked as REMOVED | Msg: ${metadata.messageId} | ${new Date().toLocaleString()}`);
+        console.log(`Event ${eventId} marked as REMOVED | Msg: ${metadata.messageId} | ${new Date().toLocaleString()}`);
       }
       // Track persistent highlights so outlines survive tree rebuilds
       if (diffType !== 0 && eventId !== undefined) {
@@ -388,7 +388,7 @@ function processMessage(data, metadata, feedsType, isFull = false) {
   // Apply to current data
   if (isFull) {
     // Full snapshot - replace all data and clear any stale highlights
-    console.log(`🔄 Loading Full snapshot (${data.Events?.length || 0} events)`);
+    console.log(`Loading Full snapshot (${data.Events?.length || 0} events)`);
     currentData = data;
     persistentHighlights = {};
   } else {
@@ -396,7 +396,7 @@ function processMessage(data, metadata, feedsType, isFull = false) {
     const isFirstLoad = !currentData || !currentData.Events;
 
     if (isFirstLoad) {
-      console.warn(`⚠️ Received incremental message without Full snapshot - using as base data`);
+      console.warn(`Received incremental message without Full snapshot - using as base data`);
       currentData = data;
     } else {
       // Deep merge events (preserves all markets/teams/scoreboards)
@@ -417,7 +417,7 @@ function processMessage(data, metadata, feedsType, isFull = false) {
         }
       });
 
-      console.log(`🔧 Merged ${data.Events?.length || 0} events (total: ${currentData.Events.length})`);
+      console.log(`Merged ${data.Events?.length || 0} events (total: ${currentData.Events.length})`);
     }
   }
 
@@ -438,7 +438,7 @@ function processMessage(data, metadata, feedsType, isFull = false) {
     }
   } else {
     // Manual refresh mode - store pending events and apply incremental updates
-    console.log(`📝 Storing pending events for manual refresh`);
+    console.log(`Storing pending events for manual refresh`);
 
     // Store pending events
     if (data.Events && data.Events.length > 0) {
@@ -466,12 +466,13 @@ function handleFullMessage(dataFeedsDiff, metadata) {
 
   // Update status
   const eventCount = dataFeedsDiff.Events?.length || 0;
-  $('#data-status').text(`Full: ${eventCount} events | ${metadata.filename}`);
+  $('#data-events-count').text(`Full: ${eventCount} events | ${metadata.filename}`);
 
   // Build tree
   buildTree(dataFeedsDiff.Events);
+  filterTreeByEventId($('#tree-search-input').val());
 
-  console.log(`✓ Loaded ${eventCount} events`);
+  console.log(`Loaded ${eventCount} events`);
 }
 
 // Handle Snapshot message
@@ -487,12 +488,12 @@ function handleSnapshotMessage(dataFeedsDiff, metadata) {
   // Update current data
   currentData = dataFeedsDiff;
 
-  console.log(`✓ Applied Snapshot ${metadata.id}`);
+  console.log(`Applied Snapshot ${metadata.id}`);
 }
 
 // Load latest Full on page load
 function loadLatestFull() {
-  console.log('📨 Requesting latest Full message...');
+  console.log('Requesting latest Full message...');
   clearEventDetail();
 
   // Set flag to indicate we're waiting for Full
@@ -504,7 +505,7 @@ function loadLatestFull() {
 
 // Load snapshot by ID
 function loadSnapshotById(id, feedsType) {
-  console.log(`📨 Requesting Snapshot ${id} (${feedsType})...`);
+  console.log(`Requesting Snapshot ${id} (${feedsType})...`);
   socket.emit('request:snapshot', { id, feedsType });
 }
 
@@ -523,11 +524,11 @@ function applyPersistentHighlights() {
 // Update UI based on current filter
 function updateUI() {
   if (!currentData || !currentData.Events) {
-    console.warn('⚠️ updateUI: No currentData or Events');
+    console.warn('updateUI: No currentData or Events');
     return;
   }
 
-  console.log('🔄 updateUI: Total events:', currentData.Events.length);
+  console.log('updateUI: Total events:', currentData.Events.length);
 
   // Filter events based on feed type selection
   const filteredEvents = currentData.Events.filter(event => {
@@ -535,10 +536,11 @@ function updateUI() {
     return feedTypeManager.shouldShowEvent(event);
   });
 
-  console.log('🔄 updateUI: Filtered events:', filteredEvents.length);
+  console.log('updateUI: Filtered events:', filteredEvents.length);
 
   // Rebuild tree with filtered events
   buildTree(filteredEvents);
+  filterTreeByEventId($('#tree-search-input').val());
 
   // Restore persistent highlights after tree rebuild (REMOVED stays red, etc.)
   applyPersistentHighlights();
@@ -557,7 +559,7 @@ function updateUI() {
 function updateDataStatus(metadata, feedsType) {
   const eventCount = currentData?.Events?.filter(e => (e.DiffType ?? e.diffType ?? 0) !== 2).length || 0;
   const typeLabel = feedsType || 'Unknown';
-  $('#data-status').text(`${typeLabel}: ${eventCount} events`);
+  $('#data-events-count').text(`${typeLabel}: ${eventCount} events`);
 
   // Update message ID indicator
   if (metadata && metadata.messageId) {
@@ -591,12 +593,12 @@ window.addEventListener('feedFilterChanged', () => {
   resetPendingUpdates(); // Reset counter when user changes filter
   // If no Full loaded yet, request one now
   if (!isFullLoaded && !waitingForFull && socket) {
-    console.log('📥 Feed type changed but no data loaded - auto-requesting Full...');
+    console.log('Feed type changed but no data loaded - auto-requesting Full...');
     waitingForFull = true;
     fullMessageId = null;
     socket.emit('request:full');
     $('#tree-container').html('<div class="loading">⏳ Requesting Full snapshot from bridge...</div>');
-    $('#data-status').text('⏳ Requesting Full from bridge...');
+    $('#data-events-count').text('⏳ Requesting Full from bridge...');
   }
 });
 
@@ -627,7 +629,7 @@ function updatePendingBadge() {
     const tooltip = `${pendingUpdates} pending update(s)\nMessage IDs: ${pendingMessageIds.join(', ')}`;
     button.attr('title', tooltip);
 
-    console.log(`⏳ Pending updates: ${pendingUpdates} | Message IDs: ${pendingMessageIds.join(', ')}`);
+    console.log(`Pending updates: ${pendingUpdates} | Message IDs: ${pendingMessageIds.join(', ')}`);
   } else {
     badge.addClass('hidden').removeClass('pulse');
     button.attr('title', 'Refresh tree with latest data');
@@ -637,7 +639,7 @@ function updatePendingBadge() {
 // Manual refresh tree - rebuild tree and apply visual highlights
 function refreshTree() {
   if (pendingEvents.length > 0) {
-    console.log(`🔄 Rebuilding tree with ${pendingEvents.length} pending events`);
+    console.log(`Rebuilding tree with ${pendingEvents.length} pending events`);
 
     // Rebuild tree to update event counts and structure
     updateUI();
@@ -648,7 +650,7 @@ function refreshTree() {
     // Clear pending events
     pendingEvents = [];
   } else {
-    console.log(`🔄 No pending events - rebuilding tree to refresh counts`);
+    console.log(`No pending events - rebuilding tree to refresh counts`);
 
     // Still rebuild tree to refresh event counts
     updateUI();
@@ -659,7 +661,10 @@ function refreshTree() {
 
 // UI Event Handlers
 $(document).ready(() => {
-  console.log('🚀 Sports Calendar App initializing...');
+  console.log('Sports Calendar App initializing...');
+
+  // Attach tree search handlers (once, independent of tree rebuilds)
+  attachSearchHandlers();
 
   // Initialize Feed Type Manager
   feedTypeManager = new FeedTypeManager();
@@ -675,20 +680,20 @@ $(document).ready(() => {
   // Auto-request Full snapshot on initial connect
   socket.on('connect', () => {
     if (!isFullLoaded && !waitingForFull) {
-      console.log('✓ Connected - auto-requesting Full snapshot...');
+      console.log('Connected - auto-requesting Full snapshot...');
       $('#tree-container').html('<div class="loading">⏳ Requesting Full snapshot from bridge...</div>');
-      $('#data-status').text('⏳ Requesting Full from bridge...');
+      $('#data-events-count').text('⏳ Requesting Full from bridge...');
       waitingForFull = true;
       fullMessageId = null;
       socket.emit('request:full');
     } else {
-      console.log('✓ Connected - Full already loaded or already requested');
+      console.log('Connected - Full already loaded or already requested');
     }
   });
 
   // Reset button - request fresh Full messages from .NET bridge
   $('#btn-reset').on('click', () => {
-    console.log('🔄 Requesting fresh Full messages from bridge...');
+    console.log('Requesting fresh Full messages from bridge...');
 
     // Set flag to indicate we're waiting for Full
     waitingForFull = true;
@@ -708,7 +713,7 @@ $(document).ready(() => {
     persistentHighlights = {}; // Clear highlight state
     resetPendingUpdates();
     $('#tree-container').html('<div class="loading">⏳ Loading Fresh Full messages...</div>');
-    $('#data-status').text('⏳ Requesting Fresh Full from bridge...');
+    $('#data-events-count').text('⏳ Requesting Fresh Full from bridge...');
   });
 
   // Load snapshot button
@@ -738,13 +743,13 @@ $(document).ready(() => {
   // Refresh tree button
   $('#btn-refresh-tree').on('click', () => {
     refreshTree();
-    console.log('🔄 Manual tree refresh');
+    console.log('Manual tree refresh');
   });
 
   // Auto-refresh toggle
   $('#chk-auto-refresh').on('change', function() {
     autoRefresh = $(this).is(':checked');
-    console.log(`🔄 Auto-refresh: ${autoRefresh ? 'ON' : 'OFF'}`);
+    console.log(`Auto-refresh: ${autoRefresh ? 'ON' : 'OFF'}`);
 
     if (autoRefresh && pendingUpdates > 0) {
       // If enabling auto-refresh and there are pending updates, refresh now
@@ -752,5 +757,5 @@ $(document).ready(() => {
     }
   });
 
-  console.log('✓ App initialized');
+  console.log('App initialized');
 });

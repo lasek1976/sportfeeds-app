@@ -80,6 +80,17 @@ body {
   font-size: 13px;
 }
 
+#data-events-count {
+  color: #495057;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+#data-last-update {
+  color: #6c757d;
+  font-size: 12px;
+}
+
 #message-id-indicator {
   color: #6c757d;
   font-family: 'Courier New', monospace;
@@ -153,6 +164,79 @@ body {
   display: none;
 }
 
+/* Tree Search Widget */
+.tree-search {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0 5px 10px;
+  border: 1.5px solid #ced4da;
+  border-radius: 20px;
+  background: #f8f9fa;
+  padding: 3px 6px 3px 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tree-search:focus-within {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,.15);
+  background: #fff;
+}
+
+.tree-search-icon {
+  color: #adb5bd;
+  font-size: 13px;
+  margin-right: 6px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.tree-search:focus-within .tree-search-icon {
+  color: #007bff;
+}
+
+#tree-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: #333;
+  outline: none;
+  padding: 3px 0;
+  min-width: 0;
+}
+
+#tree-search-input::placeholder {
+  color: #adb5bd;
+}
+
+#tree-search-clear {
+  background: none;
+  border: none;
+  color: #adb5bd;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 50%;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+#tree-search-clear:hover {
+  background: #dee2e6;
+  color: #495057;
+}
+
+.tree-node.tree-search-hidden {
+  display: none;
+}
+
 .badge.pulse {
   animation: pulse 1s ease-in-out infinite;
 }
@@ -189,7 +273,6 @@ body {
 /* Tree Styles */
 .tree-node {
   margin-left: 15px;
-  user-select: none;
 }
 
 .tree-node-header {
@@ -275,10 +358,10 @@ body {
   content: '›';
 }
 
-.tree-node-leaf > .tree-node-header .tree-toggle::before {
-  content: '▹';
-  font-size: 12px;
-  color: #6c757d;
+.tree-node.tree-node-leaf > .tree-node-header .tree-toggle::before {
+  content: '●';
+  font-size: 9px;
+  color: #28a745;
 }
 
 .event-count {

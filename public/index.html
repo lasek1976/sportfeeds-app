@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sports Calendar - Real-time</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/feed-types.css">
 </head>
@@ -32,8 +33,8 @@
       <a href="/admin.html" class="admin-link" target="_blank">📊 Admin</a>
       <div id="status">
         <span id="connection-status" class="status-disconnected">⚫ Disconnected</span>
-        <span id="message-type-indicator"></span>
-        <span id="data-status"></span>
+        <span id="data-events-count"></span>
+        <span id="data-last-update"></span>
         <span id="message-id-indicator"></span>
       </div>
     </div>
@@ -54,6 +55,11 @@
               Auto-refresh
             </label>
           </div>
+        </div>
+        <div class="tree-search">
+          <span class="tree-search-icon">🔍</span>
+          <input type="text" id="tree-search-input" placeholder="Search by Event ID…" autocomplete="off">
+          <button id="tree-search-clear" title="Clear search">✕</button>
         </div>
         <div id="tree-container">
           <div class="loading">⏳ Waiting for RabbitMQ messages...</div>

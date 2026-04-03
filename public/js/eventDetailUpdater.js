@@ -56,14 +56,14 @@ export function updateEventDetail(newEvent, currentEventId, messageId) {
     return;
   }
 
-  console.log(`🔄 Updating event detail for event ${eventId}`);
+  console.log(`Updating event detail for event ${eventId}`);
 
   const eventDiffType = newEvent.DiffType ?? newEvent.diffType ?? 0;
 
   // If event is REMOVED, highlight it but don't remove from view
   if (eventDiffType === DiffType.REMOVED) {
     $('.event-detail-content').addClass('event-removed-highlight');
-    console.log(`  🔴 Event ${eventId} marked as REMOVED`);
+    console.log(`  Event ${eventId} marked as REMOVED`);
 
     // Remove highlight after 3 seconds
     setTimeout(() => {
@@ -153,7 +153,7 @@ function getScoreboardLabel(idResultType) {
  * Update markets in the event detail view
  */
 function updateMarkets(newMarkets, messageId) {
-  console.log(`🔄 Processing ${newMarkets.length} markets`);
+  console.log(`Processing ${newMarkets.length} markets`);
 
   newMarkets.forEach(market => {
     const marketId = market.IDMarket || market.idmarket;
@@ -181,7 +181,7 @@ function updateMarkets(newMarkets, messageId) {
         $existingMarket.removeClass('market-removed market-added')
                       .addClass('market-updated');
         setMessageIdBadge($existingMarket.find('.market-header'), messageId);
-        console.log(`  🟡 Market ${marketId} - ADDED but already visible, treating as UPDATED`);
+        console.log(`  Market ${marketId} - ADDED but already visible, treating as UPDATED`);
 
         // Remove highlight after 2 seconds
         setTimeout(() => {
@@ -194,7 +194,7 @@ function updateMarkets(newMarkets, messageId) {
         $existingMarket.removeClass('market-added market-updated')
                       .addClass('market-removed');
         setMessageIdBadge($existingMarket.find('.market-header'), messageId);
-        console.log(`  🔴 Market ${marketId} - REMOVED (red outline)`);
+        console.log(`  Market ${marketId} - REMOVED (red outline)`);
 
         // Keep the red outline (don't auto-remove)
         break;
@@ -206,10 +206,10 @@ function updateMarkets(newMarkets, messageId) {
           const currentProgramStatus = parseInt($existingMarket.attr('data-program-status') ?? '1');
           if (currentProgramStatus === 1 && newProgramStatus === 0) {
             $existingMarket.addClass('market-locked');
-            console.log(`  🔒 Market ${marketId} - LOCKED (ProgramStatus 1→0)`);
+            console.log(`  Market ${marketId} - LOCKED (ProgramStatus 1→0)`);
           } else if (currentProgramStatus === 0 && newProgramStatus === 1) {
             $existingMarket.removeClass('market-locked');
-            console.log(`  🔓 Market ${marketId} - UNLOCKED (ProgramStatus 0→1)`);
+            console.log(`  Market ${marketId} - UNLOCKED (ProgramStatus 0→1)`);
           }
           $existingMarket.attr('data-program-status', newProgramStatus);
         }
@@ -223,7 +223,7 @@ function updateMarkets(newMarkets, messageId) {
         $existingMarket.removeClass('market-added market-removed')
                       .addClass('market-updated');
         setMessageIdBadge($existingMarket.find('.market-header'), messageId);
-        console.log(`  🟡 Market ${marketId} - UPDATED`);
+        console.log(`  Market ${marketId} - UPDATED`);
 
         // Remove highlight after 2 seconds
         setTimeout(() => {
@@ -254,15 +254,14 @@ function addMarket(market) {
                            'Selection';
       const oddValue = selection.OddValue ?? selection.oddValue ?? 0;
 
-      let oddIndicator = '';
-      if (oddValue === 0) {
-        oddIndicator = '<span class="odd-locked">🔒</span>';
-      }
+      const isLocked = oddValue >= 0 && oddValue <= 1;
+      const oddIndicator = isLocked ? '<span class="odd-locked">🔒</span>' : '';
+      const oddDisplay = isLocked ? '' : oddValue;
 
       selectionsHtml += `
         <div class="selection" data-selection-id="${selectionId}" data-odd-value="${oddValue}">
           <span class="selection-name">${_.escape(selectionName)} (${selectionId})</span>
-          <span class="selection-odd">${oddValue}${oddIndicator}</span>
+          <span class="selection-odd">${oddDisplay}${oddIndicator}</span>
         </div>
       `;
     });
@@ -292,7 +291,7 @@ function addMarket(market) {
     $(`.market[data-market-id="${marketId}"]`).removeClass('market-added');
   }, 3000);
 
-  console.log(`  ➕ Market ${marketId} added to view`);
+  console.log(`  Market ${marketId} added to view`);
 }
 
 /**
@@ -322,19 +321,20 @@ function updateSelections($marketElement, newSelections, messageId) {
     $oddSpan.find('.odd-arrow, .odd-locked').remove();
 
     // Determine indicator
+    const newIsLocked = newOddValue >= 0 && newOddValue <= 1;
     let indicator = '';
-    if (newOddValue === 0) {
+    if (newIsLocked) {
       indicator = '<span class="odd-locked">🔒</span>';
     } else if (newOddValue > currentOddValue) {
       indicator = '<span class="odd-arrow odd-up">▲</span>';
-      console.log(`    ⬆️ Selection ${selectionId} odd increased: ${currentOddValue} → ${newOddValue}`);
+      console.log(`    Selection ${selectionId} odd increased: ${currentOddValue} → ${newOddValue}`);
     } else if (newOddValue < currentOddValue) {
       indicator = '<span class="odd-arrow odd-down">▼</span>';
-      console.log(`    ⬇️ Selection ${selectionId} odd decreased: ${currentOddValue} → ${newOddValue}`);
+      console.log(`    Selection ${selectionId} odd decreased: ${currentOddValue} → ${newOddValue}`);
     }
 
     // Update display
-    $oddSpan.html(`${newOddValue}${indicator}`);
+    $oddSpan.html(`${newIsLocked ? '' : newOddValue}${indicator}`);
 
     // Update stored value
     $existingSelection.attr('data-odd-value', newOddValue);

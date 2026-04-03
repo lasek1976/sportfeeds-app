@@ -187,11 +187,9 @@ export function renderEventDetail(event) {
                                `Selection`;
           const oddValue = selection.oddValue ?? selection.OddValue ?? 0;
 
-          let oddDisplay = oddValue;
-          let oddIndicator = '';
-          if (oddValue >= 0 && oddValue < 1) {
-            oddIndicator = '<span class="odd-locked">🔒</span>';
-          }
+          const isLocked = oddValue >= 0 && oddValue <= 1;
+          let oddDisplay = isLocked ? '' : oddValue;
+          let oddIndicator = isLocked ? '<span class="odd-locked">🔒</span>' : '';
 
           html += `
             <div class="selection" data-selection-id="${selectionId}" data-odd-value="${oddValue}">

@@ -84,27 +84,12 @@ function restoreTreeState(state) {
  * @param {Array} events - Array of DataEventDiff objects
  */
 export function buildTree(events) {
-  console.log('🌳 buildTree called with events:', events?.length || 0);
+  console.log('buildTree called with events:', events?.length || 0);
 
   if (!events || events.length === 0) {
-    console.warn('⚠️ No events to build tree');
+    console.warn('No events to build tree');
     $('#tree-container').html('<div class="loading">No events available</div>');
     return;
-  }
-
-  console.log('First event sample:', events[0]);
-
-  // Debug: Log field names for first event
-  if (events[0]) {
-    console.log('Event field names:', Object.keys(events[0]));
-    console.log('Sport fields:', {
-      IDSport: events[0].IDSport,
-      idSport: events[0].idSport,
-      SportName: events[0].SportName,
-      sportName: events[0].sportName,
-      SportNameTranslations: events[0].SportNameTranslations,
-      sportNameTranslations: events[0].sportNameTranslations
-    });
   }
 
   // Save current state before rebuilding
@@ -123,7 +108,7 @@ export function buildTree(events) {
     'id'
   ).sort((a, b) => a.order - b.order);
 
-  console.log('📊 Extracted sports:', sports.length, sports);
+  console.log('Extracted sports:', sports.length, sports);
 
   // 2. Build tree HTML
   let html = '';
@@ -160,6 +145,11 @@ export function buildTree(events) {
     `;
 
     categories.forEach(category => {
+      // Count active events for this category
+      const categoryEventCount = events
+        .filter(e => (e.IDSport || e.idSport) === sport.id && (e.IDCategory || e.idCategory) === category.id)
+        .filter(e => (e.DiffType ?? e.diffType ?? 0) !== 2).length;
+
       // Get tournaments for this category (try both camelCase and PascalCase)
       const tournaments = _.uniqBy(
         events
@@ -180,7 +170,7 @@ export function buildTree(events) {
         <div class="tree-node collapsed" data-type="category" data-id="${category.id}">
           <div class="tree-node-header">
             <span class="tree-toggle"></span>
-            <span class="tree-label">${_.escape(category.name)}</span>
+            <span class="tree-label">${_.escape(category.name)} <span class="event-count">(${categoryEventCount})</span></span>
           </div>
           <div class="tree-node-children">
       `;
@@ -195,11 +185,13 @@ export function buildTree(events) {
           )
           .sort((a, b) => ((a.EventOrder || a.eventOrder) || 0) - ((b.EventOrder || b.eventOrder) || 0));
 
+        const tournamentEventCount = tournamentEvents.filter(e => (e.DiffType ?? e.diffType ?? 0) !== 2).length;
+
         html += `
           <div class="tree-node collapsed" data-type="tournament" data-id="${tournament.id}">
             <div class="tree-node-header">
               <span class="tree-toggle"></span>
-              <span class="tree-label">${_.escape(tournament.name)}</span>
+              <span class="tree-label">${_.escape(tournament.name)} <span class="event-count">(${tournamentEventCount})</span></span>
             </div>
             <div class="tree-node-children">
         `;
@@ -208,11 +200,16 @@ export function buildTree(events) {
           const eventName = event.EventName || event.eventName ||
                            getFirstTranslation(event.EventNameTranslations || event.eventNameTranslations) ||
                            `Event ${event.IDEvent || event.idEvent}`;
+          const eventDiffType = event.DiffType ?? event.diffType ?? 0;
+          const diffClass = eventDiffType === 1 ? ' highlight-added'
+                          : eventDiffType === 2 ? ' highlight-removed'
+                          : eventDiffType === 3 ? ' highlight-updated'
+                          : '';
           html += `
-            <div class="tree-node tree-node-leaf" data-type="event" data-id="${event.IDEvent || event.idEvent}">
+            <div class="tree-node tree-node-leaf${diffClass}" data-type="event" data-id="${event.IDEvent || event.idEvent}">
               <div class="tree-node-header">
                 <span class="tree-toggle"></span>
-                <span class="tree-label">${_.escape(eventName)}</span>
+                <span class="tree-label">${_.escape(eventName)} <span class="entity-id">(${event.IDEvent || event.idEvent})</span></span>
               </div>
             </div>
           `;
@@ -237,7 +234,7 @@ export function buildTree(events) {
   });
 
   // Render tree
-  console.log('📝 Rendering tree HTML (' + html.length + ' chars)');
+  console.log('Rendering tree HTML (' + html.length + ' chars)');
   $('#tree-container').html(html);
 
   // Restore previous state
@@ -246,7 +243,7 @@ export function buildTree(events) {
   // Attach event handlers
   attachTreeHandlers();
 
-  console.log('✅ Tree built successfully - Click ⊕ icons to expand nodes');
+  console.log('Tree built successfully - Click icons to expand nodes');
 }
 
 /**
@@ -292,6 +289,75 @@ function attachTreeHandlers() {
         window.onEventSelect(eventId);
       }
     }
+  });
+}
+
+/**
+ * Filter the tree by Event ID (partial match).
+ * Hides non-matching event leaves and collapses empty ancestor nodes.
+ * Passing an empty string restores the full tree.
+ */
+export function filterTreeByEventId(query) {
+  const q = query.trim();
+
+  if (!q) {
+    // Restore all nodes
+    $('.tree-node').removeClass('tree-search-hidden');
+    return;
+  }
+
+  // Show/hide event leaves based on match
+  $('.tree-node[data-type="event"]').each(function() {
+    const id = String($(this).data('id'));
+    if (id.includes(q)) {
+      $(this).removeClass('tree-search-hidden');
+    } else {
+      $(this).addClass('tree-search-hidden');
+    }
+  });
+
+  // Hide/show tournaments based on whether they have any visible events
+  $('.tree-node[data-type="tournament"]').each(function() {
+    const hasVisible = $(this).find('.tree-node[data-type="event"]:not(.tree-search-hidden)').length > 0;
+    if (hasVisible) {
+      $(this).removeClass('tree-search-hidden').addClass('expanded').removeClass('collapsed');
+    } else {
+      $(this).addClass('tree-search-hidden');
+    }
+  });
+
+  // Hide/show categories based on whether they have any visible tournaments
+  $('.tree-node[data-type="category"]').each(function() {
+    const hasVisible = $(this).find('.tree-node[data-type="tournament"]:not(.tree-search-hidden)').length > 0;
+    if (hasVisible) {
+      $(this).removeClass('tree-search-hidden').addClass('expanded').removeClass('collapsed');
+    } else {
+      $(this).addClass('tree-search-hidden');
+    }
+  });
+
+  // Hide/show sports based on whether they have any visible categories
+  $('.tree-node[data-type="sport"]').each(function() {
+    const hasVisible = $(this).find('.tree-node[data-type="category"]:not(.tree-search-hidden)').length > 0;
+    if (hasVisible) {
+      $(this).removeClass('tree-search-hidden').addClass('expanded').removeClass('collapsed');
+    } else {
+      $(this).addClass('tree-search-hidden');
+    }
+  });
+}
+
+/**
+ * Attach search input handlers (called once on page load, not on tree rebuild)
+ */
+export function attachSearchHandlers() {
+  $('#tree-search-input').on('input', function() {
+    filterTreeByEventId($(this).val());
+  });
+
+  $('#tree-search-clear').on('click', function() {
+    $('#tree-search-input').val('');
+    filterTreeByEventId('');
   });
 }
 

@@ -75,7 +75,7 @@ export class FeedTypeManager {
   }
 
   updateDataStatus() {
-    const statusEl = document.getElementById('data-status');
+    const statusEl = document.getElementById('data-last-update');
     if (!statusEl) return;
 
     const parts = [];

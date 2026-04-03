@@ -22,7 +22,7 @@ export function applyTreeHighlights(events) {
     return;
   }
 
-  console.log(`🎨 Applying visual highlights to ${events.length} events in tree`);
+  console.log(`Applying visual highlights to ${events.length} events in tree`);
 
   let added = 0, removed = 0, updated = 0;
 
@@ -42,27 +42,26 @@ export function applyTreeHighlights(events) {
       case DiffType.ADDED:
         $eventNode.addClass('highlight-added');
         setTreeMsgBadge($eventNode, event._messageId);
-        $eventNode.parents('.tree-node').removeClass('collapsed').addClass('expanded');
         added++;
-        console.log(`  🟢 Event ${eventId} - ADDED (green outline)`);
+        console.log(`  Event ${eventId} - ADDED`);
         break;
 
       case DiffType.REMOVED:
         $eventNode.addClass('highlight-removed');
         setTreeMsgBadge($eventNode, event._messageId);
         removed++;
-        console.log(`  🔴 Event ${eventId} - REMOVED (red outline) | Msg: ${event._messageId ?? '?'} | ${new Date().toLocaleString()}`);
+        console.log(`  Event ${eventId} - REMOVED | Msg: ${event._messageId ?? '?'} | ${new Date().toLocaleString()}`);
         break;
 
       case DiffType.UPDATED:
         $eventNode.addClass('highlight-updated');
         updated++;
-        console.log(`  🟡 Event ${eventId} - UPDATED (yellow outline)`);
+        console.log(`  Event ${eventId} - UPDATED`);
         break;
     }
   });
 
-  console.log(`✓ Highlights applied: ${added} added, ${removed} removed, ${updated} updated`);
+  console.log(`Highlights applied: ${added} added, ${removed} removed, ${updated} updated`);
 }
 
 /**
@@ -91,7 +90,7 @@ export function applyTreeMessageBadges(events) {
 export function clearTreeHighlights() {
   $('.tree-node').removeClass('highlight-added highlight-removed highlight-updated');
   $('.tree-msg-badge').remove();
-  console.log('✓ Tree highlights cleared');
+  console.log('Tree highlights cleared');
 }
 
 /**

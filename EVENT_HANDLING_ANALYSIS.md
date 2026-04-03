@@ -69,7 +69,7 @@ After tree rebuild, highlights are applied:
 ```javascript
 case DiffType.ADDED:
   $eventNode.addClass('highlight-added');  // ✅ Green outline
-  console.log(`🟢 Event ${eventId} - ADDED (green outline)`);
+  console.log(`🟢 Event ${eventId} - ADDED`);
   break;
 ```
 
@@ -130,7 +130,7 @@ shouldShowEvent(event) {
 ```javascript
 case DiffType.REMOVED:
   $eventNode.addClass('highlight-removed');  // ✅ Red outline
-  console.log(`🔴 Event ${eventId} - REMOVED (red outline)`);
+  console.log(`🔴 Event ${eventId} - REMOVED`);
   break;
 ```
 
