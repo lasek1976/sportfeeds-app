@@ -192,6 +192,7 @@ export function buildTree(events) {
             <div class="tree-node-header">
               <span class="tree-toggle"></span>
               <span class="tree-label">${_.escape(tournament.name)} <span class="event-count">(${tournamentEventCount})</span></span>
+              <span class="tournament-copy-ids" title="evts to clipboard">⎘</span>
             </div>
             <div class="tree-node-children">
         `;
@@ -250,6 +251,20 @@ export function buildTree(events) {
  * Attach click handlers to tree nodes
  */
 function attachTreeHandlers() {
+  // Copy active event IDs for a tournament
+  $('.tournament-copy-ids').on('click', function(e) {
+    e.stopPropagation();
+    const $tournament = $(this).closest('.tree-node[data-type="tournament"]');
+    const ids = $tournament.find('.tree-node[data-type="event"]:not(.highlight-removed)')
+      .map(function() { return $(this).data('id'); })
+      .get();
+    const $btn = $(this);
+    navigator.clipboard.writeText(ids.join('\n')).then(() => {
+      $btn.text('✓');
+      setTimeout(() => $btn.text('⎘'), 1200);
+    });
+  });
+
   // Expand all nodes inside a sport
   $('.sport-expand-all').on('click', function(e) {
     e.stopPropagation();

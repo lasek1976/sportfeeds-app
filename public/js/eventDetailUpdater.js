@@ -150,6 +150,34 @@ function getScoreboardLabel(idResultType) {
 }
 
 /**
+ * Refresh the active/removed counters in the markets section header
+ */
+function updateMarketsCounter() {
+  const $markets = $('.markets-section .market');
+  if ($markets.length === 0) return;
+
+  const removedCount = $markets.filter('.market-removed').length;
+  const activeCount = $markets.length - removedCount;
+
+  $('.markets-active-count').text(activeCount)
+    .attr('title', `${activeCount} active market${activeCount !== 1 ? 's' : ''}`);
+
+  const $removed = $('.markets-removed-count');
+  if (removedCount > 0) {
+    if ($removed.length === 0) {
+      $('.markets-active-count').after(
+        `<span class="markets-removed-count" title="${removedCount} removed market${removedCount > 1 ? 's' : ''}">${removedCount} removed</span>`
+      );
+    } else {
+      $removed.text(`${removedCount} removed`)
+        .attr('title', `${removedCount} removed market${removedCount > 1 ? 's' : ''}`);
+    }
+  } else {
+    $removed.remove();
+  }
+}
+
+/**
  * Update markets in the event detail view
  */
 function updateMarkets(newMarkets, messageId) {
@@ -166,6 +194,7 @@ function updateMarkets(newMarkets, messageId) {
         // Add new market with green highlight
         addMarket(market);
         setMessageIdBadge($(`.market[data-market-id="${marketId}"] .market-header`), messageId);
+        updateMarketsCounter();
       }
       return;
     }
@@ -195,6 +224,7 @@ function updateMarkets(newMarkets, messageId) {
                       .addClass('market-removed');
         setMessageIdBadge($existingMarket.find('.market-header'), messageId);
         console.log(`  Market ${marketId} - REMOVED (red outline)`);
+        updateMarketsCounter();
 
         // Keep the red outline (don't auto-remove)
         break;

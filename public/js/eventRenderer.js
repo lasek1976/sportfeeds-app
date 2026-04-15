@@ -143,9 +143,15 @@ export function renderEventDetail(event) {
 
   // Markets Section
   if (event.Markets && event.Markets.length > 0) {
+    const activeMarkets = event.Markets.filter(m => (m.DiffType ?? m.diffType ?? 0) !== 2).length;
+    const removedMarkets = event.Markets.filter(m => (m.DiffType ?? m.diffType ?? 0) === 2).length;
+    const removedBadge = removedMarkets > 0
+      ? `<span class="markets-removed-count" title="${removedMarkets} removed market${removedMarkets > 1 ? 's' : ''}">${removedMarkets} removed</span>`
+      : '';
+
     html += `
       <div class="markets-section">
-        <h3>Markets</h3>
+        <h3>Markets <span class="markets-active-count" title="${activeMarkets} active market${activeMarkets !== 1 ? 's' : ''}">${activeMarkets}</span>${removedBadge}</h3>
     `;
 
     // Sort markets by MarketOrder, then IDMarket
