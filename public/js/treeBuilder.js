@@ -137,6 +137,7 @@ export function buildTree(events) {
       <div class="tree-node collapsed" data-type="sport" data-id="${sport.id}">
         <div class="tree-node-header">
           <span class="tree-toggle"></span>
+          <span class="tree-sport-id">${sport.id}</span>
           <span class="tree-label">${_.escape(sport.name)} <span class="event-count">(${eventCount})</span></span>
           <span class="sport-expand-all" title="Expand all">⊞</span>
           <span class="sport-collapse-all" title="Collapse all">⊟</span>
@@ -379,6 +380,31 @@ export function attachSearchHandlers() {
 /**
  * Collapse all tree nodes
  */
+/**
+ * Expand all ancestor nodes of an event and scroll it into view
+ */
+export function revealEventInTree(eventId) {
+  const $eventNode = $(`.tree-node[data-type="event"][data-id="${eventId}"]`);
+  if ($eventNode.length === 0) return;
+
+  // Expand all ancestor tree-nodes
+  $eventNode.parents('.tree-node').removeClass('collapsed').addClass('expanded');
+
+  // Scroll into view inside the tree panel
+  const treeContainer = document.getElementById('tree-container');
+  const nodeEl = $eventNode[0];
+  if (treeContainer && nodeEl) {
+    const containerRect = treeContainer.getBoundingClientRect();
+    const nodeRect = nodeEl.getBoundingClientRect();
+    const offset = nodeRect.top - containerRect.top + treeContainer.scrollTop - 80;
+    treeContainer.scrollTo({ top: offset, behavior: 'smooth' });
+  }
+
+  // Brief flash to draw the eye
+  $eventNode.addClass('tree-reveal-flash');
+  setTimeout(() => $eventNode.removeClass('tree-reveal-flash'), 1200);
+}
+
 export function collapseAll() {
   $('.tree-node').removeClass('expanded').addClass('collapsed');
 }

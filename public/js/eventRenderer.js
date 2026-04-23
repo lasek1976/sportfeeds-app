@@ -83,7 +83,7 @@ export function renderEventDetail(event) {
   let html = `
     <div class="event-detail-content">
       <div class="event-header">
-        <h1>${_.escape(eventName)} <span class="entity-id">(${eventId})</span></h1>
+        <h1>${_.escape(eventName)} <span class="entity-id">(${eventId})</span><span class="reveal-in-tree" data-event-id="${eventId}" title="Reveal in tree"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></span></h1>
         <div class="event-date">
           ${_.escape(eventDate)}
           <span class="markets-expand-all" title="Expand all markets">⊞</span>
@@ -243,6 +243,11 @@ function getScoreboardLabel(idResultType) {
  * Attach market and scoreboards expand/collapse handlers
  */
 function attachToggleHandlers() {
+  $('.reveal-in-tree').on('click', function() {
+    const eventId = parseInt($(this).data('event-id'), 10);
+    if (window.revealEventInTree) window.revealEventInTree(eventId);
+  });
+
   $('.markets-expand-all').on('click', function() {
     $('.market').removeClass('collapsed').addClass('expanded');
   });

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package sportfeeds;
 
+import "google/protobuf/timestamp.proto";
+
 // ============================================================================
 // ENUMS
 // ============================================================================
@@ -65,7 +67,7 @@ message DataScoreBoardDiff {
   string ResultValue = 2;
 
   // BaseDiffObject fields (101-103)
-  int64 CreatedUTCTime = 101;  // DateTime as ticks
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }
@@ -84,7 +86,7 @@ message DataTeamDiff {
   string FullTeamName = 10;
 
   // BaseDiffObject fields (101-103)
-  int64 CreatedUTCTime = 101;
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }
@@ -95,7 +97,7 @@ message DataStreamingDiff {
   string StreamID = 2;
 
   // BaseDiffObject fields
-  int64 CreatedUTCTime = 101;
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }
@@ -121,10 +123,10 @@ message DataProviderDetailsDiff {
   bool LiveMultiCast = 8;
   bool LiveScore = 9;
   DataRoundInfo RoundInfo = 10;
-  int64 ProviderDate = 11;  // DateTime as ticks
+  google.protobuf.Timestamp ProviderDate = 11;  // DateTime as ticks
 
   // BaseDiffObject fields
-  int64 CreatedUTCTime = 101;
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }
@@ -133,12 +135,12 @@ message DataResultDiff {
   // Matches actual C# DataResultDiff class
   int32 ResultId = 1;
   int32 ResultTypeId = 2;  // short in C# -> int32 in proto
-  int64 UpdatedTime = 3;  // DateTime as ticks
+  google.protobuf.Timestamp UpdatedTime = 3;
   int32 ResultValue = 4;
   bool IsTeam = 5;
 
   // BaseDiffObject fields
-  int64 CreatedUTCTime = 101;
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }
@@ -149,7 +151,7 @@ message DataProposalSuperComboClientDiff {
   string Description = 2;
 
   // BaseDiffObject fields
-  int64 CreatedUTCTime = 101;
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }
@@ -171,7 +173,7 @@ message DataSelectionDiff {
   ProgramStatus SelectionStatus = 13;
 
   // BaseDiffObject fields
-  int64 CreatedUTCTime = 101;
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }
@@ -202,7 +204,7 @@ message DataMarketDiff {
   int32 StatisticValue = 22;  // nullable int
 
   // BaseDiffObject fields
-  int64 CreatedUTCTime = 101;
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }
@@ -213,9 +215,9 @@ message DataEventDiff {
   int32 IDCategory = 2;
   int32 IDTournament = 3;
   int64 IDEvent = 4;
-  int64 EventDate = 5;  // DateTime as ticks
-  int64 StartDate = 6;
-  int64 EndDate = 7;
+  google.protobuf.Timestamp EventDate = 5;
+  google.protobuf.Timestamp StartDate = 6;
+  google.protobuf.Timestamp EndDate = 7;
   string EventName = 8;
   map<string, TranslationList> EventNameTranslations = 9;
   string MPath = 10;
@@ -258,7 +260,7 @@ message DataEventDiff {
   bool IsWizardBetBuilderEligible = 54;
 
   // BaseDiffObject fields
-  int64 CreatedUTCTime = 101;
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }
@@ -268,7 +270,7 @@ message DataFeedsDiff {
   repeated DataEventDiff Events = 1;
 
   // BaseDiffObject fields
-  int64 CreatedUTCTime = 101;
+  google.protobuf.Timestamp CreatedUTCTime = 101;
   DiffType DiffType = 102;
   repeated DiffKeyValue DifferenceProperties = 103;
 }

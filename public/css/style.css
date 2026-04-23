@@ -364,6 +364,17 @@ body {
   color: #28a745;
 }
 
+.tree-sport-id {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #495057;
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
 .event-count {
   color: #6c757d;
   font-size: 12px;
@@ -783,6 +794,31 @@ body {
   color: #7f8c8d;
   font-size: 0.85em;
   font-weight: normal;
+}
+
+.reveal-in-tree {
+  color: #adb5bd;
+  cursor: pointer;
+  margin-left: 6px;
+  vertical-align: middle;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.reveal-in-tree:hover {
+  color: #007bff;
+}
+
+@keyframes tree-reveal-flash {
+  0%   { background-color: transparent; }
+  25%  { background-color: rgba(0, 123, 255, 0.25); }
+  75%  { background-color: rgba(0, 123, 255, 0.25); }
+  100% { background-color: transparent; }
+}
+
+.tree-reveal-flash {
+  animation: tree-reveal-flash 1.2s ease-out;
 }
 
 /* Empty State */

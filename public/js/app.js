@@ -1,4 +1,4 @@
-import { buildTree, collapseAll, attachSearchHandlers, filterTreeByEventId } from './treeBuilder.js';
+import { buildTree, collapseAll, attachSearchHandlers, filterTreeByEventId, revealEventInTree } from './treeBuilder.js';
 import { renderEventDetail, clearEventDetail } from './eventRenderer.js';
 import { applySnapshotDiff } from './diffApplier.js';
 import { FeedTypeManager } from './feedTypeManager.js';
@@ -566,6 +566,9 @@ function updateDataStatus(metadata, feedsType) {
     $('#message-id-indicator').text(`📨 Msg ID: ${metadata.messageId}`);
   }
 }
+
+// Expose tree reveal for use by eventRenderer (no ES module imports there)
+window.revealEventInTree = revealEventInTree;
 
 // Handle tree node click (event selection)
 window.onEventSelect = function(eventId) {
