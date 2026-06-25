@@ -297,7 +297,9 @@
     <h2>Fixed Snapshot Pointers</h2>
     <div class="controls">
       <label>Limit: <input type="number" id="fixed-limit" value="20" min="1" max="100"></label>
+      <label>Message ID: <input type="number" id="fixed-messageid" placeholder="optional" style="width:140px"></label>
       <button class="btn" onclick="loadFixedPointers()">Load</button>
+      <button class="btn btn-secondary" onclick="clearFixedFilter()">Clear Filter</button>
       <span id="fixed-status"></span>
     </div>
     <div id="fixed-table">
@@ -315,7 +317,9 @@
     <h2>Live Snapshot Pointers</h2>
     <div class="controls">
       <label>Limit: <input type="number" id="live-limit" value="20" min="1" max="100"></label>
+      <label>Message ID: <input type="number" id="live-messageid" placeholder="optional" style="width:140px"></label>
       <button class="btn" onclick="loadLivePointers()">Load</button>
+      <button class="btn btn-secondary" onclick="clearLiveFilter()">Clear Filter</button>
       <span id="live-status"></span>
     </div>
     <div id="live-table">
@@ -477,19 +481,32 @@
       document.getElementById('fixed-status').textContent = 'Loading...';
 
       try {
-        const response = await fetch(`/api/admin/browse/pointers/fixed?limit=${fixedLimit}&skip=${fixedSkip}`);
+        const messageIdVal = document.getElementById('fixed-messageid').value.trim();
+        let url = `/api/admin/browse/pointers/fixed?limit=${fixedLimit}&skip=${fixedSkip}`;
+        if (messageIdVal !== '') url += `&messageId=${encodeURIComponent(messageIdVal)}`;
+
+        const response = await fetch(url);
         const data = await response.json();
 
         if (data.success) {
           renderPointerTable(data.pointers, 'fixed-table');
-          document.getElementById('fixed-status').textContent = '';
+          document.getElementById('fixed-status').textContent = messageIdVal !== '' ? `(filtered by Message ID: ${messageIdVal})` : '';
           document.getElementById('fixed-range').textContent = `${fixedSkip + 1}-${fixedSkip + data.count}`;
           document.getElementById('fixed-pagination').style.display = 'flex';
+        } else {
+          document.getElementById('fixed-table').innerHTML = `<div class="error">${data.error}</div>`;
+          document.getElementById('fixed-status').textContent = '';
         }
       } catch (error) {
         console.error('Failed to load Fixed pointers:', error);
         document.getElementById('fixed-table').innerHTML = '<div class="error">Failed to load Fixed pointers</div>';
+        document.getElementById('fixed-status').textContent = '';
       }
+    }
+
+    function clearFixedFilter() {
+      document.getElementById('fixed-messageid').value = '';
+      loadFixedPointers();
     }
 
     async function loadLivePointers(skip = 0) {
@@ -499,19 +516,32 @@
       document.getElementById('live-status').textContent = 'Loading...';
 
       try {
-        const response = await fetch(`/api/admin/browse/pointers/live?limit=${liveLimit}&skip=${liveSkip}`);
+        const messageIdVal = document.getElementById('live-messageid').value.trim();
+        let url = `/api/admin/browse/pointers/live?limit=${liveLimit}&skip=${liveSkip}`;
+        if (messageIdVal !== '') url += `&messageId=${encodeURIComponent(messageIdVal)}`;
+
+        const response = await fetch(url);
         const data = await response.json();
 
         if (data.success) {
           renderPointerTable(data.pointers, 'live-table');
-          document.getElementById('live-status').textContent = '';
+          document.getElementById('live-status').textContent = messageIdVal !== '' ? `(filtered by Message ID: ${messageIdVal})` : '';
           document.getElementById('live-range').textContent = `${liveSkip + 1}-${liveSkip + data.count}`;
           document.getElementById('live-pagination').style.display = 'flex';
+        } else {
+          document.getElementById('live-table').innerHTML = `<div class="error">${data.error}</div>`;
+          document.getElementById('live-status').textContent = '';
         }
       } catch (error) {
         console.error('Failed to load Live pointers:', error);
         document.getElementById('live-table').innerHTML = '<div class="error">Failed to load Live pointers</div>';
+        document.getElementById('live-status').textContent = '';
       }
+    }
+
+    function clearLiveFilter() {
+      document.getElementById('live-messageid').value = '';
+      loadLivePointers();
     }
 
     function renderFullTable(messages) {

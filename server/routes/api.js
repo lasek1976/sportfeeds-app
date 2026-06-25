@@ -202,8 +202,12 @@ router.get('/admin/browse/pointers/fixed', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit, 10) || 50;
     const skip = parseInt(req.query.skip, 10) || 0;
+    const messageId = req.query.messageId ? parseInt(req.query.messageId, 10) : null;
+    if (req.query.messageId && isNaN(messageId)) {
+      return res.status(400).json({ success: false, error: 'Invalid messageId' });
+    }
 
-    const pointers = await browseFixedPointers(limit, skip);
+    const pointers = await browseFixedPointers(limit, skip, messageId);
     res.json({
       success: true,
       count: pointers.length,
@@ -229,8 +233,12 @@ router.get('/admin/browse/pointers/live', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit, 10) || 50;
     const skip = parseInt(req.query.skip, 10) || 0;
+    const messageId = req.query.messageId ? parseInt(req.query.messageId, 10) : null;
+    if (req.query.messageId && isNaN(messageId)) {
+      return res.status(400).json({ success: false, error: 'Invalid messageId' });
+    }
 
-    const pointers = await browseLivePointers(limit, skip);
+    const pointers = await browseLivePointers(limit, skip, messageId);
     res.json({
       success: true,
       count: pointers.length,

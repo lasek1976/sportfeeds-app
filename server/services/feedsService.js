@@ -247,14 +247,18 @@ export async function browseSnapshots(limit = 50, skip = 0) {
  *
  * @param {number} limit - Number of records to return (default: 50)
  * @param {number} skip - Number of records to skip (default: 0)
+ * @param {number|null} messageId - Optional filter by MessageId
  * @returns {Promise<Array>} Array of Fixed snapshot pointers
  */
-export async function browseFixedPointers(limit = 50, skip = 0) {
+export async function browseFixedPointers(limit = 50, skip = 0, messageId = null) {
   const db = getDB();
 
   try {
+    const filter = { FeedsType: 'Fixed' };
+    if (messageId != null) filter.MessageId = messageId;
+
     const pointers = await db.collection('FixedSnapshotMessages')
-      .find({ FeedsType: 'Fixed' })
+      .find(filter)
       .sort({ CreatedTime: -1 })
       .limit(limit)
       .skip(skip)
@@ -277,14 +281,18 @@ export async function browseFixedPointers(limit = 50, skip = 0) {
  *
  * @param {number} limit - Number of records to return (default: 50)
  * @param {number} skip - Number of records to skip (default: 0)
+ * @param {number|null} messageId - Optional filter by MessageId
  * @returns {Promise<Array>} Array of Live snapshot pointers
  */
-export async function browseLivePointers(limit = 50, skip = 0) {
+export async function browseLivePointers(limit = 50, skip = 0, messageId = null) {
   const db = getDB();
 
   try {
+    const filter = { FeedsType: 'Live' };
+    if (messageId != null) filter.MessageId = messageId;
+
     const pointers = await db.collection('LiveSnapshotMessages')
-      .find({ FeedsType: 'Live' })
+      .find(filter)
       .sort({ CreatedTime: -1 })
       .limit(limit)
       .skip(skip)

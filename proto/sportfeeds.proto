@@ -16,10 +16,15 @@ enum DiffType {
 }
 
 enum ProgramStatus {
-  PROGRAM_STATUS_UNKNOWN = 0;
-  PROGRAM_STATUS_ACTIVE = 1;
-  PROGRAM_STATUS_SUSPENDED = 2;
-  PROGRAM_STATUS_NOT_STARTED_RETIRED = 3;
+  PROGRAM_STATUS_DISABLED = 0;           // C# Disabled
+  PROGRAM_STATUS_ENABLED = 1;            // C# Enabled (was: ACTIVE)
+  PROGRAM_STATUS_UNUSED = 2;             // C# Unused
+  PROGRAM_STATUS_DELETED = 3;            // C# Deleted
+  PROGRAM_STATUS_CLOSED = 4;             // C# Closed
+  PROGRAM_STATUS_READY_TO_SETTLE = 5;    // C# ReadyToSettle
+  PROGRAM_STATUS_UNSETTLED = 6;          // C# Unsettled
+  PROGRAM_STATUS_SETTLE_WAITING = 7;     // C# SettleWaiting
+  PROGRAM_STATUS_NOT_STARTED_RETIRED = 14; // C# NotStartedRetired
 }
 
 // ============================================================================
@@ -170,7 +175,6 @@ message DataSelectionDiff {
   double SSpread = 10;  // nullable decimal -> double
   int32 ResultOverride = 11;  // nullable short -> int32
   string ProviderIdTeam = 12;
-  ProgramStatus SelectionStatus = 13;
 
   // BaseDiffObject fields
   google.protobuf.Timestamp CreatedUTCTime = 101;

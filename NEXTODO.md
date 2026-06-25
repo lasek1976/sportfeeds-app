@@ -27,6 +27,28 @@
   already in `consumedMessageIds` — one early-return stops the second stream dead before it
   can re-lock the blocking flag
 
+## Done this session (2026-05-28)
+
+### Admin: MessageId filter for Fixed and Live Snapshot Pointers
+- Added optional `messageId` query param to `browseFixedPointers()` and `browseLivePointers()` in `server/services/feedsService.js` — appended to the MongoDB `find` filter when provided
+- Updated `/api/admin/browse/pointers/fixed` and `/api/admin/browse/pointers/live` in `server/routes/api.js` to read, validate, and forward the `?messageId=<number>` query param
+- Added "Message ID" number input and "Clear Filter" button to both Fixed and Live Snapshot Pointers sections in `public/admin.html`; status text shows the active filter; no bridge changes required
+
+## Done this session (2026-06-04)
+
+### OddValue = 0 missing from JSON API responses
+- **Root cause**: `JsonFormatter.Default` (Google.Protobuf) follows proto3 conventions and omits fields whose value equals the type default — `0.0` for `double`. When a variation set `OddValue` to zero it simply disappeared from the JSON output of the bridge's `/api/message/snapshot/:id` and `/api/message/full/:id` endpoints.
+- **Fix** (`sportfeeds-bridge/Program.cs`): replaced `JsonFormatter.Default` with a shared instance built from `JsonFormatter.Settings.Default.WithFormatDefaultValues(true)`, used by both JSON endpoints. The RabbitMQ binary path was already safe (`protobufjs` uses `defaults: true` in `toObject()`).
+
+### ProgramStatus enum mismatch between C# and proto
+- **Root cause**: proto enum only defined values 0–3 with names like `PROGRAM_STATUS_ACTIVE`, while the C# `ProgramStatus` enum has 9 values (including `NotStartedRetired = 14`). Values ≥ 4 serialised as bare integers in JSON with no readable name.
+- **Fix**: both `proto/sportfeeds.proto` files extended to cover all 9 C# enum values with matching names (`PROGRAM_STATUS_DISABLED`, `PROGRAM_STATUS_ENABLED`, … `PROGRAM_STATUS_NOT_STARTED_RETIRED = 14`).
+
+### SelectionStatus removed from serialization
+- **Finding**: `SelectionStatus` was never detected as a diff (absent from `CompareProperties`), so it only appeared as a passenger on other changes — and always showed `PROGRAM_STATUS_ENABLED (1)` because zero-valued selections were previously invisible due to the `JsonFormatter.Default` bug above.
+- **Removed from** (bridge): `DataSelection.cs`, `DataSelectionDiff.cs` (property + `Convert()` assignment + `NotStartedRetired` force-zero block), `ProtobufConverter.cs`, `proto/sportfeeds.proto`.
+- **Removed from** (app): `proto/sportfeeds.proto` field; `diffApplier.js` `selection-status-locked` CSS class toggle — confirmed safe because `SelectionStatus` was never actually `0` in practice so the class was never applied. `ProgramStatus` enum kept in both protos for documentation.
+
 ## Open / Next
 
 - Verify the red border (highlight-removed) now appears reliably in auto-refresh mode

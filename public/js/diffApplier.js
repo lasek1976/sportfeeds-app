@@ -194,13 +194,6 @@ function applySelectionsDiff(selections, snapshotId) {
           }
         }
 
-        // Update selection status (locked/active)
-        if (selection.SelectionStatus === 0) {
-          $selection.addClass('selection-status-locked');
-        } else {
-          $selection.removeClass('selection-status-locked');
-        }
-
         setSnapshotBadge($selection, snapshotId);
         break;
     }

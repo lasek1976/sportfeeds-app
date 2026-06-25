@@ -207,10 +207,12 @@ function updateMarkets(newMarkets, messageId) {
           updateSelections($existingMarket, market.Selections, messageId);
         }
 
+        const wasRemoved = $existingMarket.hasClass('market-removed');
         $existingMarket.removeClass('market-removed market-added')
                       .addClass('market-updated');
         setMessageIdBadge($existingMarket.find('.market-header'), messageId);
         console.log(`  Market ${marketId} - ADDED but already visible, treating as UPDATED`);
+        if (wasRemoved) updateMarketsCounter();
 
         // Remove highlight after 2 seconds
         setTimeout(() => {
@@ -250,10 +252,12 @@ function updateMarkets(newMarkets, messageId) {
         }
 
         // Highlight as updated (yellow outline)
+        const wasRemovedOnUpdate = $existingMarket.hasClass('market-removed');
         $existingMarket.removeClass('market-added market-removed')
                       .addClass('market-updated');
         setMessageIdBadge($existingMarket.find('.market-header'), messageId);
         console.log(`  Market ${marketId} - UPDATED`);
+        if (wasRemovedOnUpdate) updateMarketsCounter();
 
         // Remove highlight after 2 seconds
         setTimeout(() => {
