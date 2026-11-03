@@ -150,31 +150,70 @@ function getScoreboardLabel(idResultType) {
 }
 
 /**
- * Refresh the active/removed counters in the markets section header
+ * Re-sort the markets and refresh the header counters after a market changed state
+ */
+function refreshMarketsSection() {
+  sortMarkets();
+  updateMarketsCounter();
+}
+
+/**
+ * Keep markets ordered by group (active, disabled, removed), then MarketOrder, then IDMarket,
+ * the same order eventRenderer uses. Re-appending existing elements moves them and keeps
+ * their classes, badges and expanded/collapsed state.
+ */
+function sortMarkets() {
+  const $section = $('.markets-section');
+  const group = el => el.getAttribute('data-removed') === 'true' ? 2
+                    : el.getAttribute('data-program-status') === '0' ? 1
+                    : 0;
+  const num = (el, attr) => Number(el.getAttribute(attr)) || 0;
+
+  const sorted = $section.children('.market').get().sort((a, b) =>
+    (group(a) - group(b)) ||
+    (num(a, 'data-market-order') - num(b, 'data-market-order')) ||
+    (num(a, 'data-market-id') - num(b, 'data-market-id')));
+
+  $section.append(sorted);
+}
+
+/**
+ * Refresh the active/disabled/removed counters in the markets section header.
+ * The groups are disjoint: Removed (DiffType 2), Disabled (ProgramStatus 0, not removed), Active (the rest).
  */
 function updateMarketsCounter() {
   const $markets = $('.markets-section .market');
   if ($markets.length === 0) return;
 
-  const removedCount = $markets.filter('.market-removed').length;
-  const activeCount = $markets.length - removedCount;
+  const $removedMarkets = $markets.filter('[data-removed="true"]');
+  const removedCount = $removedMarkets.length;
+  const disabledCount = $markets.not($removedMarkets).filter('[data-program-status="0"]').length;
+  const activeCount = $markets.length - removedCount - disabledCount;
 
   $('.markets-active-count').text(activeCount)
     .attr('title', `${activeCount} active market${activeCount !== 1 ? 's' : ''}`);
 
-  const $removed = $('.markets-removed-count');
-  if (removedCount > 0) {
-    if ($removed.length === 0) {
-      $('.markets-active-count').after(
-        `<span class="markets-removed-count" title="${removedCount} removed market${removedCount > 1 ? 's' : ''}">${removedCount} removed</span>`
-      );
-    } else {
-      $removed.text(`${removedCount} removed`)
-        .attr('title', `${removedCount} removed market${removedCount > 1 ? 's' : ''}`);
-    }
-  } else {
-    $removed.remove();
+  setMarketsCountBadge('markets-disabled-count', disabledCount, 'disabled', $('.markets-active-count'));
+  const $disabled = $('.markets-disabled-count');
+  setMarketsCountBadge('markets-removed-count', removedCount, 'removed',
+    $disabled.length > 0 ? $disabled : $('.markets-active-count'));
+}
+
+/**
+ * Create, update or remove a counter badge in the markets section header
+ */
+function setMarketsCountBadge(cssClass, count, label, $after) {
+  let $badge = $(`.${cssClass}`);
+  if (count === 0) {
+    $badge.remove();
+    return;
   }
+  if ($badge.length === 0) {
+    $badge = $(`<span class="${cssClass}"></span>`);
+    $after.after($badge);
+  }
+  $badge.text(`${count} ${label}`)
+    .attr('title', `${count} ${label} market${count > 1 ? 's' : ''}`);
 }
 
 /**
@@ -193,8 +232,8 @@ function updateMarkets(newMarkets, messageId) {
       if (diffType === DiffType.ADDED) {
         // Add new market with green highlight
         addMarket(market);
-        setMessageIdBadge($(`.market[data-market-id="${marketId}"] .market-header`), messageId);
-        updateMarketsCounter();
+        setMessageIdBadge($(`.market[data-market-id="${marketId}"] .market-header`), messageId, getChangeDate(market));
+        refreshMarketsSection();
       }
       return;
     }
@@ -207,12 +246,12 @@ function updateMarkets(newMarkets, messageId) {
           updateSelections($existingMarket, market.Selections, messageId);
         }
 
-        const wasRemoved = $existingMarket.hasClass('market-removed');
         $existingMarket.removeClass('market-removed market-added')
+                      .removeAttr('data-removed')
                       .addClass('market-updated');
-        setMessageIdBadge($existingMarket.find('.market-header'), messageId);
+        setMessageIdBadge($existingMarket.find('.market-header'), messageId, getChangeDate(market));
         console.log(`  Market ${marketId} - ADDED but already visible, treating as UPDATED`);
-        if (wasRemoved) updateMarketsCounter();
+        refreshMarketsSection();
 
         // Remove highlight after 2 seconds
         setTimeout(() => {
@@ -223,10 +262,11 @@ function updateMarkets(newMarkets, messageId) {
       case DiffType.REMOVED:
         // Highlight as removed (red outline) but don't remove from DOM
         $existingMarket.removeClass('market-added market-updated')
-                      .addClass('market-removed');
-        setMessageIdBadge($existingMarket.find('.market-header'), messageId);
+                      .addClass('market-removed')
+                      .attr('data-removed', 'true');
+        setMessageIdBadge($existingMarket.find('.market-header'), messageId, getChangeDate(market));
         console.log(`  Market ${marketId} - REMOVED (red outline)`);
-        updateMarketsCounter();
+        refreshMarketsSection();
 
         // Keep the red outline (don't auto-remove)
         break;
@@ -236,14 +276,17 @@ function updateMarkets(newMarkets, messageId) {
         const newProgramStatus = market.ProgramStatus ?? market.programStatus;
         if (newProgramStatus !== undefined) {
           const currentProgramStatus = parseInt($existingMarket.attr('data-program-status') ?? '1');
-          if (currentProgramStatus === 1 && newProgramStatus === 0) {
-            $existingMarket.addClass('market-locked');
-            console.log(`  Market ${marketId} - LOCKED (ProgramStatus 1→0)`);
-          } else if (currentProgramStatus === 0 && newProgramStatus === 1) {
-            $existingMarket.removeClass('market-locked');
-            console.log(`  Market ${marketId} - UNLOCKED (ProgramStatus 0→1)`);
+          if (currentProgramStatus !== 0 && newProgramStatus === 0) {
+            console.log(`  Market ${marketId} - LOCKED (ProgramStatus ${currentProgramStatus}→0)`);
+          } else if (currentProgramStatus === 0 && newProgramStatus !== 0) {
+            console.log(`  Market ${marketId} - UNLOCKED (ProgramStatus 0→${newProgramStatus})`);
           }
-          $existingMarket.attr('data-program-status', newProgramStatus);
+          $existingMarket.toggleClass('market-locked', newProgramStatus === 0)
+                        .attr('data-program-status', newProgramStatus);
+        }
+        const newMarketOrder = market.MarketOrder ?? market.marketOrder;
+        if (newMarketOrder !== undefined) {
+          $existingMarket.attr('data-market-order', newMarketOrder);
         }
 
         // Update selections within the market
@@ -252,12 +295,12 @@ function updateMarkets(newMarkets, messageId) {
         }
 
         // Highlight as updated (yellow outline)
-        const wasRemovedOnUpdate = $existingMarket.hasClass('market-removed');
         $existingMarket.removeClass('market-added market-removed')
+                      .removeAttr('data-removed')
                       .addClass('market-updated');
-        setMessageIdBadge($existingMarket.find('.market-header'), messageId);
+        setMessageIdBadge($existingMarket.find('.market-header'), messageId, getChangeDate(market));
         console.log(`  Market ${marketId} - UPDATED`);
-        if (wasRemovedOnUpdate) updateMarketsCounter();
+        refreshMarketsSection();
 
         // Remove highlight after 2 seconds
         setTimeout(() => {
@@ -302,7 +345,7 @@ function addMarket(market) {
   }
 
   const marketHtml = `
-    <div class="market expanded market-added${programStatus === 0 ? ' market-locked' : ''}" data-market-id="${marketId}" data-program-status="${programStatus}">
+    <div class="market expanded market-added${programStatus === 0 ? ' market-locked' : ''}" data-market-id="${marketId}" data-market-order="${market.MarketOrder ?? market.marketOrder ?? 0}" data-program-status="${programStatus}">
       <div class="market-header">
         <span class="market-toggle"></span>
         <span class="market-name">${_.escape(marketName)} (${marketId})</span>
@@ -390,8 +433,9 @@ function updateSelections($marketElement, newSelections, messageId) {
 /**
  * Set or update the message ID badge on a market header or selection row.
  * Creates the badge element if it doesn't exist yet; updates the text if it does.
+ * When changeDate is given, a date badge is shown right after the message ID badge.
  */
-function setMessageIdBadge($container, messageId) {
+function setMessageIdBadge($container, messageId, changeDate = null) {
   if (!messageId) return;
   let $badge = $container.find('.snapshot-id-badge');
   if ($badge.length === 0) {
@@ -399,4 +443,33 @@ function setMessageIdBadge($container, messageId) {
     $container.append($badge);
   }
   $badge.text(messageId);
+
+  let $dateBadge = $container.find('.snapshot-date-badge');
+  if (!changeDate) {
+    $dateBadge.remove(); // don't leave the date of a previous variation next to a new message ID
+    return;
+  }
+  if ($dateBadge.length === 0) {
+    $dateBadge = $('<span class="snapshot-date-badge"></span>');
+    $badge.after($dateBadge);
+  }
+  $dateBadge.text(changeDate.toLocaleString('it-IT', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }));
+}
+
+/**
+ * Get the time a diff entity (e.g. a market) was created by the producer,
+ * from its CreatedUTCTime (google.protobuf.Timestamp decoded as { seconds, nanos }).
+ */
+function getChangeDate(entity) {
+  const ts = entity.CreatedUTCTime ?? entity.createdUTCTime;
+  const seconds = Number(ts?.seconds ?? 0);
+  if (!seconds) return null;
+  return new Date(seconds * 1000 + Math.floor(Number(ts.nanos ?? 0) / 1e6));
 }

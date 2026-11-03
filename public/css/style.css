@@ -453,11 +453,22 @@ body {
 .markets-active-count {
   font-size: 12px;
   font-weight: normal;
-  color: #6c757d;
-  background: #e9ecef;
+  color: #fff;
+  background: #28a745;
   border-radius: 10px;
   padding: 1px 7px;
   margin-left: 6px;
+  vertical-align: middle;
+}
+
+.markets-disabled-count {
+  font-size: 12px;
+  font-weight: normal;
+  color: #fff;
+  background: #6c757d;
+  border-radius: 10px;
+  padding: 1px 7px;
+  margin-left: 4px;
   vertical-align: middle;
 }
 
@@ -769,6 +780,21 @@ body {
   white-space: nowrap;
 }
 
+/* Variation date badge (next to the Snapshot ID badge on market headers) */
+.snapshot-date-badge {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-family: monospace;
+  color: #555;
+  background-color: #ecf0f1;
+  border: 1px solid #bdc3c7;
+  border-radius: 3px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 /* Odd Value Indicators */
 .odd-arrow {
   font-size: 12px;
@@ -808,6 +834,20 @@ body {
 
 .reveal-in-tree:hover {
   color: #007bff;
+}
+
+.event-provider {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  font-size: 12px;
+  font-weight: normal;
+  color: #004085;
+  background: #cce5ff;
+  border: 1px solid #b8daff;
+  border-radius: 10px;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 @keyframes tree-reveal-flash {

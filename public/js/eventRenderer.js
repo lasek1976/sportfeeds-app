@@ -80,10 +80,20 @@ export function renderEventDetail(event) {
   const eventName = event.EventName || getFirstTranslation(event.EventNameTranslations);
   const eventDate = event.EventDate ? formatDate(ticksToDate(event.EventDate)) : event.EventDateString || '';
 
+  // Provider badges: "Code · ProviderName", or just the name when Code is empty
+  const providerBadges = (event.ProviderDetails || event.providerDetails || [])
+    .map(details => details.Provider || details.provider)
+    .filter(provider => provider && (provider.Code || provider.ProviderName))
+    .map(provider => {
+      const label = [provider.Code, provider.ProviderName].filter(Boolean).join(' · ');
+      return `<span class="event-provider" title="Provider">${_.escape(label)}</span>`;
+    })
+    .join('');
+
   let html = `
     <div class="event-detail-content">
       <div class="event-header">
-        <h1>${_.escape(eventName)} <span class="entity-id">(${eventId})</span><span class="reveal-in-tree" data-event-id="${eventId}" title="Reveal in tree"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></span></h1>
+        <h1>${_.escape(eventName)} <span class="entity-id">(${eventId})</span><span class="reveal-in-tree" data-event-id="${eventId}" title="Reveal in tree"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></span>${providerBadges}</h1>
         <div class="event-date">
           ${_.escape(eventDate)}
           <span class="markets-expand-all" title="Expand all markets">⊞</span>
@@ -143,19 +153,30 @@ export function renderEventDetail(event) {
 
   // Markets Section
   if (event.Markets && event.Markets.length > 0) {
-    const activeMarkets = event.Markets.filter(m => (m.DiffType ?? m.diffType ?? 0) !== 2).length;
-    const removedMarkets = event.Markets.filter(m => (m.DiffType ?? m.diffType ?? 0) === 2).length;
+    // Active / Disabled (ProgramStatus 0, not removed) / Removed (DiffType 2) are disjoint
+    const isRemovedMarket = m => (m.DiffType ?? m.diffType ?? 0) === 2;
+    const isDisabledMarket = m => !isRemovedMarket(m) && (m.ProgramStatus ?? m.programStatus ?? 1) === 0;
+    const removedMarkets = event.Markets.filter(isRemovedMarket).length;
+    const disabledMarkets = event.Markets.filter(isDisabledMarket).length;
+    const activeMarkets = event.Markets.length - removedMarkets - disabledMarkets;
+    const disabledBadge = disabledMarkets > 0
+      ? `<span class="markets-disabled-count" title="${disabledMarkets} disabled market${disabledMarkets > 1 ? 's' : ''}">${disabledMarkets} disabled</span>`
+      : '';
     const removedBadge = removedMarkets > 0
       ? `<span class="markets-removed-count" title="${removedMarkets} removed market${removedMarkets > 1 ? 's' : ''}">${removedMarkets} removed</span>`
       : '';
 
     html += `
       <div class="markets-section">
-        <h3>Markets <span class="markets-active-count" title="${activeMarkets} active market${activeMarkets !== 1 ? 's' : ''}">${activeMarkets}</span>${removedBadge}</h3>
+        <h3>Markets <span class="markets-active-count" title="${activeMarkets} active market${activeMarkets !== 1 ? 's' : ''}">${activeMarkets}</span>${disabledBadge}${removedBadge}</h3>
     `;
 
-    // Sort markets by MarketOrder, then IDMarket
+    // Sort markets by group (active, disabled, removed), then MarketOrder, then IDMarket
+    // (same order eventDetailUpdater.sortMarkets() keeps on live updates)
+    const marketGroup = m => isRemovedMarket(m) ? 2 : isDisabledMarket(m) ? 1 : 0;
     const markets = [...event.Markets].sort((a, b) => {
+      const groupDiff = marketGroup(a) - marketGroup(b);
+      if (groupDiff !== 0) return groupDiff;
       const orderDiff = (a.MarketOrder || 0) - (b.MarketOrder || 0);
       if (orderDiff !== 0) return orderDiff;
       return (a.IDMarket || 0) - (b.IDMarket || 0);
@@ -167,9 +188,13 @@ export function renderEventDetail(event) {
                         market.NameOverride ||
                         getFirstTranslation(market.marketNameTranslations || market.MarketNameTranslations) ||
                         `Market`;
+      const programStatus = market.ProgramStatus ?? market.programStatus ?? 1;
+      // data-removed (no red outline on re-render), data-program-status and data-market-order
+      // keep header counters and market order consistent when eventDetailUpdater works on the DOM
+      const removedAttr = (market.DiffType ?? market.diffType ?? 0) === 2 ? ' data-removed="true"' : '';
 
       html += `
-        <div class="market collapsed" data-market-id="${marketId}">
+        <div class="market collapsed${programStatus === 0 ? ' market-locked' : ''}" data-market-id="${marketId}" data-market-order="${market.MarketOrder || 0}" data-program-status="${programStatus}"${removedAttr}>
           <div class="market-header">
             <span class="market-toggle"></span>
             <span class="market-name">${_.escape(marketName)} <span class="entity-id">(${marketId})</span></span>
