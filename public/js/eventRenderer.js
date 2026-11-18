@@ -3,6 +3,8 @@
  * Renders event details including Teams, ScoreBoards, and Markets
  */
 
+import { factCodeLabel } from './factCodes.js';
+
 /**
  * Extract first available translation
  * Handles both the old format (nested .translations) and protobuf map format
@@ -135,15 +137,17 @@ export function renderEventDetail(event) {
         <div class="scoreboards-content">
     `;
 
-    event.ScoreBoards.forEach(scoreboard => {
-      const label = getScoreboardLabel(scoreboard.IdResultType);
-      html += `
-        <div class="scoreboard" data-result-type="${scoreboard.IdResultType}">
-          <span class="label">${label}:</span>
-          <span class="value">${_.escape(scoreboard.ResultValue || '')}</span>
-        </div>
-      `;
-    });
+    [...event.ScoreBoards]
+      .sort((a, b) => (a.IdResultType || 0) - (b.IdResultType || 0))
+      .forEach(scoreboard => {
+        const label = getScoreboardLabel(scoreboard.IdResultType);
+        html += `
+          <div class="scoreboard" data-result-type="${scoreboard.IdResultType}">
+            <span class="label">${label}:</span>
+            <span class="value">${_.escape(scoreboard.ResultValue || '')}</span>
+          </div>
+        `;
+      });
 
     html += `
         </div>
@@ -250,18 +254,10 @@ export function renderEventDetail(event) {
 }
 
 /**
- * Get human-readable label for scoreboard result type
+ * Label of a scoreboard: IdResultType is an IDFactCode (decoded from config/fact-codes.csv)
  */
 function getScoreboardLabel(idResultType) {
-  const labels = {
-    1: 'Current',
-    2: 'Quarter',
-    3: 'Half',
-    4: 'Period',
-    5: 'Set',
-    6: 'Game'
-  };
-  return labels[idResultType] || `Type ${idResultType}`;
+  return `${_.escape(factCodeLabel(idResultType))} <span class="entity-id">(${idResultType})</span>`;
 }
 
 /**
@@ -298,7 +294,7 @@ function attachToggleHandlers() {
 export function clearEventDetail() {
   $('#event-detail').html(`
     <div class="empty-state">
-      <p>Select an event from the tree to view details</p>
+      <p>Select an event from the tree to view details, or click ▦ next to a sport to open its overview</p>
     </div>
   `);
 }

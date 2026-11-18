@@ -1,0 +1,631 @@
+/* ============================================================================
+   Sport Overview
+   ============================================================================ */
+
+/* Tree: sport overview button */
+.sport-overview {
+  margin-left: auto;
+  font-size: 14px;
+  color: #adb5bd;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sport-overview:hover {
+  color: #007bff;
+}
+
+.tree-node-header.overview-active {
+  background: #e3f2fd;
+  font-weight: 500;
+}
+
+.tree-node-header.overview-active .sport-overview {
+  color: #007bff;
+}
+
+/* Page */
+.ov-content {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ov-header {
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #007bff;
+}
+
+.ov-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ov-title h1 {
+  font-size: 20px;
+}
+
+.ov-title .event-badge,
+.ov-title .markets-active-count,
+.ov-title .markets-removed-count {
+  margin-left: 0;
+}
+
+.ov-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ov-feed-switch {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: #f0f0f0;
+  border-radius: 6px;
+}
+
+.ov-feed-btn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ov-feed-btn:hover {
+  background: #e8e8e8;
+}
+
+.ov-feed-btn.active {
+  background: #007bff;
+  color: white;
+}
+
+.ov-filter {
+  flex: 1;
+  min-width: 180px;
+  max-width: 360px;
+}
+
+.ov-filter-input {
+  width: 100%;
+  padding: 6px 12px;
+  border: 1.5px solid #ced4da;
+  border-radius: 20px;
+  background: #f8f9fa;
+  font-size: 13px;
+  outline: none;
+}
+
+.ov-filter-input:focus {
+  border-color: #007bff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, .15);
+}
+
+.ov-btn-markets {
+  margin-left: auto;
+  font-size: 13px;
+  padding: 6px 12px;
+}
+
+.btn-secondary {
+  background: #6c757d;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+.ov-back {
+  margin-bottom: 12px;
+  font-size: 13px;
+  padding: 6px 12px;
+}
+
+/* Table */
+.ov-table-wrapper {
+  overflow-x: auto;
+}
+
+.ov-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.ov-table thead th {
+  position: sticky;
+  top: -20px; /* detail panel padding */
+  z-index: 2;
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  padding: 8px;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ov-table th.ov-market-col {
+  text-align: center;
+}
+
+.ov-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.ov-group td {
+  background: #eef4fb;
+  color: #004085;
+  font-weight: 600;
+  padding: 6px 8px;
+  border-bottom: 1px solid #d6e4f5;
+}
+
+.ov-group-sep {
+  color: #6c757d;
+  margin: 0 4px;
+}
+
+.ov-hidden {
+  display: none;
+}
+
+.ov-row:hover td {
+  background: #fafcff;
+}
+
+.ov-info {
+  white-space: nowrap;
+  width: 1%;
+  color: #555;
+}
+
+.ov-score {
+  font-weight: 700;
+  color: #333;
+}
+
+.ov-minute {
+  margin-left: 6px;
+  color: #28a745;
+  font-weight: 600;
+}
+
+.ov-event {
+  min-width: 200px;
+}
+
+.ov-event-name {
+  color: #007bff;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.ov-event-name:hover {
+  text-decoration: underline;
+}
+
+.ov-stop {
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.ov-markets-count {
+  width: 1%;
+  text-align: center;
+  color: #6c757d;
+}
+
+/* Market cells */
+.ov-cell {
+  position: relative;
+  text-align: center;
+  min-width: 120px;
+}
+
+.ov-cell-empty {
+  color: #ced4da;
+}
+
+.ov-cell-locked .ov-sels {
+  opacity: 0.55;
+}
+
+.ov-spread {
+  display: inline-block;
+  margin-bottom: 3px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: #6c757d;
+  border-radius: 3px;
+}
+
+.ov-lines {
+  display: inline-block;
+  margin-left: 3px;
+  margin-bottom: 3px;
+  padding: 0 4px;
+  font-size: 10px;
+  color: #6c757d;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+}
+
+.ov-sels {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.ov-sel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 46px;
+  max-width: 90px;
+  padding: 3px 6px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background: #fff;
+  transition: background-color 1s ease-out;
+}
+
+.ov-sel-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  color: #6c757d;
+}
+
+.ov-sel-odd {
+  font-weight: 700;
+  color: #007bff;
+  white-space: nowrap;
+}
+
+.ov-sel-locked .ov-sel-odd {
+  color: #adb5bd;
+}
+
+.ov-sel .odd-arrow {
+  font-size: 9px;
+  margin-left: 2px;
+}
+
+.ov-odd-up {
+  background-color: #b8f0cd;
+  transition: none;
+}
+
+.ov-odd-down {
+  background-color: #f8c4c0;
+  transition: none;
+}
+
+.ov-odd-changed {
+  background-color: #ffeaa7;
+  transition: none;
+}
+
+/* Row highlights (same palette as the tree) */
+.ov-row.ov-row-added td {
+  background-color: rgba(46, 204, 113, 0.12);
+}
+
+.ov-row.ov-row-added td:first-child {
+  box-shadow: inset 4px 0 0 #2ecc71;
+}
+
+.ov-row.ov-row-updated td {
+  background-color: rgba(243, 156, 18, 0.10);
+}
+
+.ov-row.ov-row-updated td:first-child {
+  box-shadow: inset 4px 0 0 #f39c12;
+}
+
+.ov-row.ov-row-removed td {
+  background-color: rgba(231, 76, 60, 0.08);
+  color: #999;
+}
+
+.ov-row.ov-row-removed td:first-child {
+  box-shadow: inset 4px 0 0 #e74c3c;
+}
+
+.ov-row.ov-row-removed .ov-event-name {
+  text-decoration: line-through;
+}
+
+.ov-row-stopped .ov-sels {
+  opacity: 0.55;
+}
+
+/* ============================================================================
+   Market selection panel (right drawer)
+   ============================================================================ */
+
+#ov-market-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+}
+
+#ov-market-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: 100%;
+  background: #fff;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+}
+
+.ov-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 2px solid #007bff;
+}
+
+.ov-panel-title {
+  font-size: 15px;
+}
+
+.ov-panel-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+.ov-panel-close:hover {
+  color: #333;
+}
+
+.ov-panel-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  gap: 14px;
+}
+
+.ov-panel-section h4 {
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #007bff;
+}
+
+.ov-panel-hint {
+  font-weight: normal;
+  color: #6c757d;
+}
+
+.ov-panel-available-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ov-panel-search {
+  padding: 6px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.ov-panel-selected,
+.ov-panel-available {
+  list-style: none;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.ov-panel-selected {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.ov-panel-available {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.ov-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 13px;
+}
+
+.ov-panel-item:last-child {
+  border-bottom: none;
+}
+
+.ov-panel-item label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.ov-panel-item-selected {
+  background: #f5f9ff;
+}
+
+.ov-panel-pos {
+  min-width: 18px;
+  font-weight: 600;
+  color: #007bff;
+}
+
+.ov-panel-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-panel-coverage {
+  font-size: 11px;
+  color: #6c757d;
+  white-space: nowrap;
+}
+
+.ov-panel-move,
+.ov-panel-remove {
+  background: none;
+  border: 1px solid #dee2e6;
+  border-radius: 3px;
+  font-size: 10px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  color: #495057;
+}
+
+.ov-panel-move:hover:not([disabled]),
+.ov-panel-remove:hover {
+  background: #e9ecef;
+}
+
+.ov-panel-move[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.ov-panel-remove {
+  color: #dc3545;
+}
+
+.ov-panel-empty {
+  padding: 10px;
+  color: #999;
+  font-size: 13px;
+  text-align: center;
+}
+
+.ov-panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #eee;
+}
+
+.ov-panel-footer .btn {
+  font-size: 13px;
+  padding: 6px 12px;
+}
+
+/* ============================================================================
+   Collapsible tournament groups
+   ============================================================================ */
+
+.ov-group {
+  cursor: pointer;
+  user-select: none;
+}
+
+.ov-group:hover td {
+  background: #e1ecf9;
+}
+
+.ov-group-toggle {
+  display: inline-block;
+  width: 14px;
+  margin-right: 4px;
+  color: #fd7e14;
+}
+
+.ov-group.expanded .ov-group-toggle::before {
+  content: '▾';
+}
+
+.ov-group.collapsed .ov-group-toggle::before {
+  content: '▸';
+}
+
+.ov-row.ov-collapsed {
+  display: none;
+}
+
+/* Variation on an event of a collapsed group */
+.ov-group.ov-group-changed td {
+  background-color: rgba(243, 156, 18, 0.25);
+  box-shadow: inset 4px 0 0 #f39c12;
+}
+
+.ov-groups-expand-all,
+.ov-groups-collapse-all {
+  font-size: 16px;
+  color: #adb5bd;
+  cursor: pointer;
+  line-height: 1;
+  user-select: none;
+}
+
+.ov-groups-expand-all:hover,
+.ov-groups-collapse-all:hover {
+  color: #007bff;
+}
+
+/* ============================================================================
+   Live score (from scoreboard fact codes)
+   ============================================================================ */
+
+.ov-score-box {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  cursor: help;
+}
+
+.ov-score-box .ov-minute {
+  margin-left: 0;
+}
+
+.ov-score-detail {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.ov-clock {
+  font-size: 11px;
+  font-family: monospace;
+  color: #28a745;
+}

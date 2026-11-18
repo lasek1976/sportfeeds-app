@@ -49,6 +49,38 @@
 - **Removed from** (bridge): `DataSelection.cs`, `DataSelectionDiff.cs` (property + `Convert()` assignment + `NotStartedRetired` force-zero block), `ProtobufConverter.cs`, `proto/sportfeeds.proto`.
 - **Removed from** (app): `proto/sportfeeds.proto` field; `diffApplier.js` `selection-status-locked` CSS class toggle — confirmed safe because `SelectionStatus` was never actually `0` in practice so the class was never applied. `ProgramStatus` enum kept in both protos for documentation.
 
+## Done this session (2026-11-18) — branch `feature/sport-overview`
+
+### Sport overview (Fixed / Live)
+- New `public/js/overviewRenderer.js` + `public/css/overview.css`
+- Tree: ▦ icon on each sport header opens the overview of that sport for the current Fixed / Live filter
+  (`window.onSportOverview` in `app.js`, marker kept across tree rebuilds via `setActiveOverviewSport()`)
+- Page: all events of the sport grouped by Category › Tournament, one column per selected market type
+  (main line = enabled first, then MarketOrder, then IDMarket; spread badge and "+N lines"), date (prematch)
+  or score/minute (live), active markets count, text filter, Prematch/Live switch, click on event → detail with
+  "← Back to sport overview"
+- Tournament groups (`ov-group`) are collapsible (click on the header, ⊞/⊟ expand/collapse all in the toolbar);
+  state kept across re-renders and row patches, reset when changing sport; a variation on an event of a collapsed
+  group flashes the group header in yellow
+- Market panel (⚙ Markets): choose / reorder / remove market types per sport **and** feed; saved in
+  localStorage `sportfeeds.overview.markets.v1` (key `fixed:<sportId>` / `live:<sportId>`).
+  Default when never configured: types offered by ≥50% of the most common type's events, lowest avg MarketOrder, top 3
+- Live variations: when the overview is open, `processMessage()` calls `updateOverview()` (both auto and manual refresh):
+  changed rows are re-rendered in place with odd ▲/▼ flash, message ID badge, green (added) / yellow (updated) /
+  red (removed, persistent) row highlight; new events trigger a debounced full re-render; Full → full re-render
+
+### Scoreboard fact codes (IdResultType = IDFactCode)
+- The snapshot producer writes `IdResultType = scoreboardRow.IDFactCode`: decoding table exported from Phoenix DB
+  into `config/fact-codes.csv` (no header, `;`, UTF-8 BOM: `IDFactCode;Description;DefaultValue;Flag;Flag`)
+- `server/services/factCodesService.js` parses it (re-read when the file changes) → `GET /api/fact-codes`
+- `public/js/factCodes.js`: `factCodeLabel()` + `getScoreSummary()` — score from Team1/Team2 fact pairs
+  (933/934 goals, 1073/1074 points, 1126/1127 runs, 1039/1040 sets, 1105/1106 legs, 1111/1112 frames, 1134/1135 maps;
+  first pair with a non-zero value wins), tennis detail (current set games 1029.. + points 1027/1028), inning 1079,
+  Last Clock 943 only when not `00:00:00`
+- Old bug: overview picked IdResultType 10/1 then "first non-empty" → showed Last Clock `00:00:00` or a `0` counter
+- Event detail Score section: labels decoded from the table (replaces the two contradicting hard-coded maps), sorted by code
+- Open: no sport column in the CSV → the score pair is chosen by priority; add a per-sport override if a sport shows the wrong pair
+
 ## Open / Next
 
 - Verify the red border (highlight-removed) now appears reliably in auto-refresh mode

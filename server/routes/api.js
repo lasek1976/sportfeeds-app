@@ -10,6 +10,7 @@ import {
   browseLivePointers,
   getStats
 } from '../services/feedsService.js';
+import { getFactCodes } from '../services/factCodesService.js';
 
 const router = express.Router();
 
@@ -109,6 +110,19 @@ router.get('/feeds/snapshot/live/latest', async (req, res) => {
  * GET /api/health
  * Health check endpoint
  */
+/**
+ * GET /api/fact-codes
+ * Decoding table of ScoreBoards IdResultType (= IDFactCode), read from config/fact-codes.csv
+ */
+router.get('/fact-codes', (req, res) => {
+  try {
+    res.json({ success: true, data: getFactCodes() });
+  } catch (error) {
+    console.error('API error (fact codes):', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 router.get('/health', (req, res) => {
   res.json({
     success: true,

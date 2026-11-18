@@ -571,7 +571,7 @@ body {
 
 .scoreboard .label {
   font-weight: 500;
-  min-width: 80px;
+  min-width: 300px; /* fact code descriptions (e.g. "Current Second Half Score Team1 (980)") */
 }
 
 .scoreboard .value {

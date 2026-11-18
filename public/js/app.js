@@ -1,9 +1,11 @@
-import { buildTree, collapseAll, attachSearchHandlers, filterTreeByEventId, revealEventInTree } from './treeBuilder.js';
+import { buildTree, collapseAll, attachSearchHandlers, filterTreeByEventId, revealEventInTree, setActiveOverviewSport } from './treeBuilder.js';
 import { renderEventDetail, clearEventDetail } from './eventRenderer.js';
 import { applySnapshotDiff } from './diffApplier.js';
 import { FeedTypeManager } from './feedTypeManager.js';
 import { applyTreeHighlights, clearTreeHighlights, applyTreeMessageBadges } from './treeUpdater.js';
 import { updateEventDetail } from './eventDetailUpdater.js';
+import { loadFactCodes } from './factCodes.js';
+import { initOverview, openOverview, closeOverview, refreshOverview, updateOverview, isOverviewActive, getOverviewSportId } from './overviewRenderer.js';
 
 // Global state
 let socket = null;
@@ -457,6 +459,15 @@ function processMessage(data, metadata, feedsType, isFull = false) {
     incrementPendingUpdates(metadata.messageId);
   }
 
+  // Sport overview open: apply the variations to it (in both auto and manual refresh mode)
+  if (isOverviewActive()) {
+    if (isFull) {
+      refreshOverview();
+    } else if (data.Events) {
+      updateOverview(data.Events, metadata.messageId);
+    }
+  }
+
   updateDataStatus(metadata, feedsType);
 }
 
@@ -494,6 +505,7 @@ function handleSnapshotMessage(dataFeedsDiff, metadata) {
 // Load latest Full on page load
 function loadLatestFull() {
   console.log('Requesting latest Full message...');
+  leaveOverview();
   clearEventDetail();
 
   // Set flag to indicate we're waiting for Full
@@ -519,6 +531,20 @@ function applyPersistentHighlights() {
     DiffType: info.diffType
   }));
   applyTreeHighlights(events);
+}
+
+// Events of the current Fixed / Live filter
+function getVisibleEvents() {
+  if (!currentData || !currentData.Events) return [];
+  return currentData.Events.filter(event => !feedTypeManager || feedTypeManager.shouldShowEvent(event));
+}
+
+// Close the sport overview (if open) and clear its marker in the tree
+function leaveOverview() {
+  if (isOverviewActive()) {
+    closeOverview();
+  }
+  setActiveOverviewSport(null);
 }
 
 // Update UI based on current filter
@@ -570,8 +596,32 @@ function updateDataStatus(metadata, feedsType) {
 // Expose tree reveal for use by eventRenderer (no ES module imports there)
 window.revealEventInTree = revealEventInTree;
 
+// Open the overview of a sport (all events of the current feed with the main markets)
+window.onSportOverview = function(sportId) {
+  currentEventId = null;
+  setActiveOverviewSport(sportId);
+  openOverview(sportId);
+};
+
+// Open an event clicked in the overview, with a link back to the overview
+function openEventFromOverview(eventId) {
+  const sportId = getOverviewSportId();
+
+  $('.tree-node-header').removeClass('selected');
+  $(`.tree-node[data-type="event"][data-id="${eventId}"] > .tree-node-header`).addClass('selected');
+
+  window.onEventSelect(eventId);
+
+  if (currentEventId === eventId && $('.event-detail-content').length > 0) {
+    const $back = $('<button class="btn ov-back">← Back to sport overview</button>');
+    $back.on('click', () => window.onSportOverview(sportId));
+    $('#event-detail').prepend($back);
+  }
+}
+
 // Handle tree node click (event selection)
 window.onEventSelect = function(eventId) {
+  leaveOverview();
   currentEventId = eventId;
 
   if (!currentData || !currentData.Events) {
@@ -593,6 +643,7 @@ window.onEventSelect = function(eventId) {
 // Listen for feed filter changes
 window.addEventListener('feedFilterChanged', () => {
   updateUI();
+  refreshOverview(); // no-op when the overview is closed
   resetPendingUpdates(); // Reset counter when user changes filter
   // If no Full loaded yet, request one now
   if (!isFullLoaded && !waitingForFull && socket) {
@@ -673,6 +724,16 @@ $(document).ready(() => {
   feedTypeManager = new FeedTypeManager();
   window.feedTypeManager = feedTypeManager; // Make available globally
 
+  // Initialize Sport Overview
+  initOverview({
+    getEvents: getVisibleEvents,
+    getFeedType: () => feedTypeManager.getFilter(),
+    onEventOpen: openEventFromOverview
+  });
+
+  // Load the scoreboard fact codes table (labels + score); refresh the overview once available
+  loadFactCodes().then(() => refreshOverview());
+
   // Initialize Socket.io
   initSocket();
 
@@ -706,6 +767,7 @@ $(document).ready(() => {
 
     // Clear current data to show loading state
     currentData = null;
+    leaveOverview();
     clearEventDetail();
     consumedMessageIds.clear(); // Clear consumed message IDs to allow reprocessing
     chunkedMessages = {}; // Clear any incomplete chunked messages
