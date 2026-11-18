@@ -3,6 +3,8 @@
  * Handles real-time updates to the currently viewed event with visual indicators
  */
 
+import { factCodeLabel } from './factCodes.js';
+
 const DiffType = {
   EQUAL: 0,
   ADDED: 1,
@@ -140,13 +142,11 @@ function updateScoreboards(newScoreboards) {
   });
 }
 
+/**
+ * Label of a scoreboard: IdResultType is an IDFactCode (decoded from config/fact-codes.csv)
+ */
 function getScoreboardLabel(idResultType) {
-  const labels = {
-    1: 'FT Score',
-    2: 'HT Score',
-    10: 'Current Score'
-  };
-  return labels[idResultType] || `Score (${idResultType})`;
+  return `${_.escape(factCodeLabel(idResultType))} <span class="entity-id">(${idResultType})</span>`;
 }
 
 /**

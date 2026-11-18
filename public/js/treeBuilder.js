@@ -8,7 +8,7 @@
  * Structure: map<string, TranslationList> where TranslationList has items array
  * Prefers common languages (it, en, es, de, fr) but accepts ANY language as fallback (including "--")
  */
-function getFirstTranslation(translationDict) {
+export function getFirstTranslation(translationDict) {
   if (!translationDict || typeof translationDict !== 'object') {
     return '';
   }
@@ -41,6 +41,20 @@ function getFirstTranslation(translationDict) {
   }
 
   return '';
+}
+
+// Sport whose overview is open in the detail panel (survives tree rebuilds)
+let activeOverviewSportId = null;
+
+/**
+ * Mark the sport whose overview is open (null = no overview open)
+ */
+export function setActiveOverviewSport(sportId) {
+  activeOverviewSportId = sportId;
+  $('.tree-node[data-type="sport"] > .tree-node-header').removeClass('overview-active');
+  if (sportId !== null && sportId !== undefined) {
+    $(`.tree-node[data-type="sport"][data-id="${sportId}"] > .tree-node-header`).addClass('overview-active');
+  }
 }
 
 /**
@@ -77,6 +91,9 @@ function restoreTreeState(state) {
     $(`.tree-node[data-type="event"][data-id="${state.selectedEventId}"] .tree-node-header`)
       .addClass('selected');
   }
+
+  // Restore the open sport overview marker
+  setActiveOverviewSport(activeOverviewSportId);
 }
 
 /**
@@ -139,6 +156,7 @@ export function buildTree(events) {
           <span class="tree-toggle"></span>
           <span class="tree-sport-id">${sport.id}</span>
           <span class="tree-label">${_.escape(sport.name)} <span class="event-count">(${eventCount})</span></span>
+          <span class="sport-overview" title="Open sport overview (all events with main markets)">▦</span>
           <span class="sport-expand-all" title="Expand all">⊞</span>
           <span class="sport-collapse-all" title="Collapse all">⊟</span>
         </div>
@@ -264,6 +282,16 @@ function attachTreeHandlers() {
       $btn.text('✓');
       setTimeout(() => $btn.text('⎘'), 1200);
     });
+  });
+
+  // Open the sport overview in the detail panel
+  $('.sport-overview').on('click', function(e) {
+    e.stopPropagation();
+    const sportId = $(this).closest('.tree-node[data-type="sport"]').data('id');
+    $('.tree-node-header').removeClass('selected');
+    if (window.onSportOverview) {
+      window.onSportOverview(sportId);
+    }
   });
 
   // Expand all nodes inside a sport

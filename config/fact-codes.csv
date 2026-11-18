@@ -1,0 +1,388 @@
+﻿1;Attack;;0;0
+2;Attendance;0;1;0
+3;Ball in play Service taken;;0;0
+4;Ball safe;;0;0
+5;Basketball score change;;0;0
+6;Basketball score miss;;0;0
+7;Bet start;;0;0
+8;Bet stop;;0;0
+9;Cancel corner {IDTEAM};;0;0
+10;Cancel goal  {IDTEAM};;0;0
+11;Cancel last sent event;;0;0
+12;Cancel penalty awarded {IDTEAM};;0;0
+13;Cancel red card {IDTEAM};;0;0
+14;Cancel yellow / red card {IDTEAM};;0;0
+15;Cancel yellow card {IDTEAM};;0;0
+16;Cancelled corner {IDTEAM};;0;0
+17;Cancelled goal {IDTEAM};;0;0
+18;Cancelled penalty {IDTEAM};;0;0
+19;Cancelled point;;0;0
+20;Cancelled red card {IDTEAM};;0;0
+21;Clear events;;0;0
+22;Connection down;;0;0
+23;Connection problems;;0;0
+24;Corner {IDTEAM};;0;1
+25;Corner kick count;;0;0
+26;Danger;;0;0
+27;Dangerous attack;;0;0
+28;Dangerous free kick;;0;0
+29;Deleted event alert;;0;0
+30;Flip coin;;0;0
+31;Foul;;0;0
+32;Fouls count;;0;0
+33;Free kick count;;0;0
+34;Free kick;;0;0
+35;Free text;;0;0
+37;Game conditions changed;;0;0
+38;Goal {IDTEAM};;0;1
+39;Goal keeper save;;0;0
+40;Goal keeper save count;;0;0
+41;Goal kick;;0;0
+42;Goal kick count;;0;0
+43;Injury;;0;0
+44;Injury Break;;0;0
+45;Injury time;;0;0
+46;Kickoff;;0;1
+47;Manual time adjustment;;0;0
+48;Match about to start;;0;0
+50;Minute of silent;;0;0
+51;National anthem singing;;0;0
+53;Off side count;;0;0
+54;Offside;;0;0
+55;Penalty {IDTEAM};;0;1
+56;Penalty awarded {IDTEAM};;0;1
+57;Penalty missed;;0;1
+58;Photo taking;;0;0
+59;Players are coming out;;0;0
+60;Players lined up;;0;0
+61;Possible corner;;0;0
+62;Possible goal;;0;0
+63;Possible penalty;;0;0
+64;Possible red card;;0;0
+65;Prize giving ceremony;;0;0
+66;Red card {IDTEAM};;0;1
+67;Safe;;0;0
+68;Scout in Stadion;;0;0
+69;Scout Offline;;0;0
+70;Scout Online;;0;0
+71;Shake hands;;0;0
+72;Shot;;0;0
+73;Shot blocked;;0;0
+74;Shot blocked count;;0;0
+75;Shot off target;;0;0
+76;Shot off target count;;0;0
+77;Shot on target;;0;0
+78;Shot on target count;;0;0
+79;Shot woodwork;;0;0
+80;Start first half;;0;1
+81;Start first half extra time;;0;1
+85;Start penalty shootout;;0;1
+88;Start second half;;0;1
+89;Start second half extra time;;0;1
+90;Stop first half;;0;1
+91;Stop first half extra time;;0;1
+92;Stop Game;;0;1
+93;Stop penalty shootout;;0;1
+94;Stop second half;;0;1
+95;Stop second half extra time;;0;1
+96;Substitution;;0;0
+97;System Message;;0;0
+98;Tennis score change;;0;0
+99;Tennis service fault;;0;0
+100;Throw in;;0;0
+101;Throw in count;;0;0
+102;Time stop;;0;0
+103;Transmission Online;;0;0
+104;Yellow/Red card {IDTEAM};;0;1
+105;Yellow card {IDTEAM};;0;1
+106;Start first period;;0;1
+107;Start second period;;0;1
+108;Start third period;;0;1
+109;Start fourth period;;0;1
+110;Start fifth period;;0;1
+111;Postponed;;0;1
+112;Delayed;;0;1
+113;Cancelled;;0;1
+114;Interrupted;;0;1
+115;Abandoned;;0;1
+116;Walkover;;0;1
+117;Retired {IDTEAM};;0;1
+118;Awaiting overtime;;0;1
+119;Awaiting penalities;;0;1
+120;Overtime;;0;1
+121;Start first set;;0;1
+122;Start second set;;0;1
+123;Start third set;;0;1
+125;Start fourth set;;0;1
+126;Start fifth set;;0;1
+127;Start first quarter;;0;1
+128;Start second quarter;;0;1
+129;Start third quarter;;0;1
+130;Start fourth quarter;;0;1
+131;Time started;;0;0
+132;Time paused;;0;0
+133;Stop first quarter;;0;1
+134;Stop second quarter;;0;1
+135;Stop third quarter;;0;1
+136;No red card;;0;0
+137;No penality;;0;0
+138;Retake penality;;0;0
+139;Dangerous shot;;0;0
+140;Stoppage Time Info;;0;0
+141;Scorer Info;;0;0
+142;Ball Position Info;;0;0
+143;Cancelled yellow card {IDTEAM};;0;0
+144;Finished;;0;1
+145;Match restart;;0;1
+166;Start sixth set;;0;1
+167;Start seventh set;;0;1
+185;Stop fourth quarter;;1;1
+186;Start overtimes;;1;1
+187;Stop overtimes;;1;1
+188;Home First to 5;;0;1
+189;"Retired ";;0;1
+190;Home First to 15;;0;1
+191;Home First to 20;;0;1
+192;Home First to 25;;0;1
+193;Home First to 30;;0;1
+194;Away First to 5;;0;1
+195;Away First to 10;;0;1
+196;Away First to 15;;0;1
+197;Away First to 20;;0;1
+198;Away First to 25;;0;1
+199;Away First to 30;;0;1
+200;Started;;0;0
+201;Stop first period;;1;1
+202;Stop second period;;1;1
+203;Stop third period;;1;1
+205;Corner SecondHalf Result Team1;0;0;0
+206;Corner SecondHalf Result Team2;0;0;0
+207;Set {#} : {IDTEAM} first to {#};;0;1
+208;Halve {#} : {IDTEAM} first to {#};;0;1
+209;Quarter {#} : {IDTEAM} first to {#};;0;1
+301;Overtime Result Team1;0;1;0
+302;Overtime Result Team2;0;1;0
+401;Double Fault Set 1;;0;0
+402;Double Fault Set 2;;0;0
+403;Double Fault Set 3;;0;0
+404;Double Fault Set 4;;0;0
+405;Double Fault Set 5;;0;0
+411;Ace Set 1;;0;0
+412;Ace Set 2;;0;0
+413;Ace Set 3;;0;0
+414;Ace Set 4;;0;0
+415;Ace Set 5;;0;0
+421;Cancelled Double Fault Set 1;;0;0
+422;Cancelled Double Fault Set 2;;0;0
+423;Cancelled Double Fault Set 3;;0;0
+424;Cancelled Double Fault Set 4;;0;0
+425;Cancelled Double Fault Set 5;;0;0
+431;Cancelled Ace Set 1;;0;0
+432;Cancelled Ace Set 2;;0;0
+433;Cancelled Ace Set 3;;0;0
+434;Cancelled Ace Set 4;;0;0
+435;Cancelled Ace Set 5;;0;0
+911;Current Double Faults Set 1;0;1;1
+912;Current Double Faults Set 2;0;1;1
+913;Current Double Faults Set 3;0;1;1
+914;Current Double Faults Set 4;0;1;1
+915;Current Double Faults Set 5;0;1;1
+921;Current Ace Set 1;0;1;1
+922;Current Ace Set 2;0;1;1
+923;Current Ace Set 3;0;1;1
+924;Current Ace Set 4;0;1;1
+925;Current Ace Set 5;0;1;1
+933;Current Goal Team 1;0;1;1
+934;Current Goal Team 2;0;1;1
+935;Current Corner Team 1;0;1;1
+936;Current Corner Team 2;0;1;1
+937;Current Yellow Team 1;0;1;1
+938;Current Yellow Team 2;0;1;1
+939;Current Red Team 1;0;1;1
+940;Current Red Team 2;0;1;1
+941;Current Penalty Awarded Team 1;0;1;1
+942;Current Penalty Awarded Team 2;0;1;1
+943;Last Clock;00:00:00;1;0
+944;Match Status;1;1;1
+945;Last event;;0;0
+946;Period Length;;1;0
+947;Overtime Length;;1;0
+948;Set Limit;;1;0
+949;Format;;1;0
+950;Advantage Rule;;1;0
+951;Match TieBreak Set;;1;0
+970;First half start time;00:00:00;0;0
+971;Second half start time;00:00:00;0;0
+972;First overtime start time;00:00:00;0;0
+973;Second overtime start time;00:00:00;0;0
+974;Period Duration;45;1;0
+975;Extratime Duration;0;1;0
+976;Has Penalties;0;0;0
+977;Current Half Time Score Team1;0;1;0
+978;Current Half Time Score Team2;0;1;0
+979;Current Second Half Score Team1;0;1;0
+980;Current Second Half Score Team2;0;1;0
+983;Goal Between 0 15 Team1;0;0;0
+984;Goal Between 0 15 Team2;0;0;0
+985;Goal Between 15 30 Team1;0;0;0
+986;Goal Between 15 30 Team2;0;0;0
+987;Goal Between 30 HT Team1;0;0;0
+988;Goal Between 30 HT Team2;0;0;0
+989;Goal Between 2HF 60 Team1;0;0;0
+990;Goal Between 2HF 60 Team2;0;0;0
+991;Goal Between 60 75 Team1;0;0;0
+992;Goal Between 60 75 Team2;0;0;0
+993;Goal Between 75 FT Team1;0;0;0
+994;Goal Between 75 FT Team2;0;0;0
+995;Injury time first half;1.5;0;0
+996;Injury time second half;3.5;0;0
+997;Bet freeze;0;0;0
+998;WeatherCondition;SE;1;0
+999;AutoBetFreeze;0;0;0
+1000;SuspendedReason;0;1;0
+1001;NeutralVenue;0;1;0
+1002;NumberOfPeriod;2;1;0
+1003;WeatherConditionIsVisible;1;1;0
+1004;ClockIsVisible;1;1;0
+1005;MatchStatusIsVisible;1;1;0
+1006;ScoreIsVisible;1;1;0
+1007;TimeLineIsVisible;1;1;0
+1008;AttendanceIsVisible;1;1;0
+1009;NeutralVenueIsVisible;1;1;0
+1010;MatchDurationIsVisible;1;1;0
+1011;IsReturnMatch;0;1;0
+1012;FirstMatchGoalsTeam1;0;0;0
+1013;FirstMatchGoalsTeam2;0;0;0
+1014;LastGoal;0;0;0
+1015;RacingLap;0;1;0
+1016;LapLeader;0;1;0
+1017;Safety Car In;;1;1
+1018;Green Flag On Next Lap;;1;1
+1019;Red flag;;1;1
+1020;Yellow flag/caution;;1;1
+1021;Black flag;;1;1
+1022;LapLeaderIsVisible;1;1;0
+1023;RetiredListIsVisible;1;1;0
+1024;MatchBestOfSets;3;1;0
+1025;PlayerToServe;0;1;0
+1026;CurrentSetNumber;0;1;0
+1027;CurrentPointTeam1;0;1;0
+1028;CurrentPointTeam2;0;1;0
+1029;Score Set 1 Team 1;0;1;0
+1030;Score Set 1 Team 2;0;1;0
+1031;Score Set 2 Team 1;0;1;0
+1032;Score Set 2 Team 2;0;1;0
+1033;Score Set 3 Team 1;0;1;0
+1034;Score Set 3 Team 2;0;1;0
+1035;Score Set 4 Team 1;0;1;0
+1036;Score Set 4 Team 2;0;1;0
+1037;Score Set 5 Team 1;0;1;0
+1038;Score Set 5 Team 2;0;1;0
+1039;Sets won Team 1;0;1;0
+1040;Sets won Team 2;0;1;0
+1041;CurrentGameNumber;0;1;0
+1042;SurfaceType;0;1;0
+1043;BookProfile;3;0;0
+1044;MarketsForceSuspension;0;0;0
+1045;AutomaticSettlementMode;1;0;0
+1046;Quarter 1 Points Team 1;0;1;0
+1047;Quarter 1 Points Team 2;0;1;0
+1048;Quarter 2 Points Team 1;0;1;0
+1049;Quarter 2 Points Team 2;0;1;0
+1050;Quarter 3 Points Team 1;0;1;0
+1051;Quarter 3 Points Team 2;0;1;0
+1052;Quarter 4 Points Team 1;0;1;0
+1053;Quarter 4 Points Team 2;0;1;0
+1054;Half 1 Points Team 1;0;1;0
+1055;Half 1 Points Team 2;0;1;0
+1056;Half 2 Points Team 1;0;1;0
+1057;Half 2 Points Team 2;0;1;0
+1058;OverTime Points Team 1;0;1;0
+1059;OverTime Points Team 2;0;1;0
+1060;MatchHasQuarter;1;1;0
+1061;Remaining Time in Current Period;1;1;0
+1062;Period1PointsTeam1;0;1;0
+1063;Period1PointsTeam2;0;1;0
+1064;Period2PointsTeam1;0;1;0
+1065;Period2PointsTeam2;0;1;0
+1066;Period3PointsTeam1;0;1;0
+1067;Period3PointsTeam2;0;1;0
+1068;PowerPlay Condition;0;1;0
+1069;FlagTvExclusion;0;0;0
+1070;Time Correction;0;0;0
+1071;Stat;0;0;0
+1072;Sys msg;0;0;0
+1073;TotalPointsTeam1;0;1;0
+1074;TotalPointsTeam2;0;1;0
+1075;TotalTriesTeam1;0;1;0
+1076;TotalTriesTeam2;0;1;0
+1077;TotalConversionsTeam1;0;1;0
+1078;TotalConversionsTeam2;0;1;0
+1079;CurrentInning;Top 1;1;0
+1080;InningScoresTeam1;;1;0
+1081;InningScoresTeam2;;1;0
+1082;Outs;0;1;0
+1083;Strikes;0;1;0
+1084;Balls;0;1;0
+1085;Base 1 Occupied;0;1;0
+1086;Base 2 Occupied;0;1;0
+1087;Base 3 Occupied;0;1;0
+1088;PenaltyModeIsVisible;1;1;0
+1089;Current Penalty Team 1;0;1;1
+1090;Current Penalty Team 2;0;1;1
+1091;IsTeam1InPossession;0;1;1
+1092;IsTeam2InPossession;0;1;1
+1093;CurrentDown;0;1;1
+1094;DistanceToCompleteDown;0;1;1
+1095;DistanceToReachEndZone;0;1;1
+1096;Result Order;;1;0
+1097;Blank;;1;1
+1098;Touchdown {IDTEAM};;1;1
+1099;Field goal {IDTEAM};;1;1
+1100;Field goal missed;;1;1
+1101;Try {IDTEAM};;1;1
+1102;Sets And Legs;0;1;0
+1103;Match Best Of Legs;;1;0
+1104;Current Leg Number;;1;0
+1105;Legs Won Team 1;;1;0
+1106;Legs Won Team 2;;1;0
+1107;180s Team 1;;1;0
+1108;180s Team 2;;1;0
+1109;Match Best Of Frames;;1;0
+1110;Current Frame Number;;1;0
+1111;Frames Won Team 1;;1;0
+1112;Frames Won Team 2;;1;0
+1113;Centuries Team 1;;1;0
+1114;Centuries Team 2;;1;0
+1115;Highest Match Break Team 1;;1;0
+1116;Highest Match Break Team 2;;1;0
+1117;CurrentCornersIsVisible;1;1;0
+1118;CurrentPenaltiesAwardedIsVisible;1;1;0
+1119;Expedite System;;1;0
+1120;Score Set 6 Team1;0;1;0
+1121;Score Set 6 Team2;0;1;0
+1122;Score Set 7 Team1;0;1;0
+1123;Score Set 7 Team2;0;1;0
+1124;Current Over;0;1;0
+1125;Current Delivery;0;1;0
+1126;Total Runs Team 1;0;1;0
+1127;Total Runs Team 2;0;1;0
+1128;Penalty Runs Team 1;0;1;0
+1129;Penalty Runs Team 2;0;1;0
+1130;Dismissals Team 1;0;1;0
+1131;Dismissals Team 2;0;1;0
+1132;Match Best Of Maps;;1;0
+1133;Current Map Number;;1;0
+1134;Maps Won Team 1;;1;0
+1135;Maps Won Team 2;;1;0
+1136;MarketsForceSuspensionSecondary;0;0;0
+1137;AutomaticSettlementModeSecondary;1;0;0
+10002;ID Tournament;15;0;0
+10820;Disable Corner Markets;" ";0;0
+10821;Enable Corner Markets;" ";0;0
+10830;Disable Card Markets;" ";0;0
+10831;Enable Card Markets;" ";0;0
+10832;IsAttachToBetradar;" ";0;0
+10833;Ignore Event Date When Started;0;0;0
+10834;Disable InRunnig Delay;0;0;0
+10835;InRunnig Delay Default Value;0;0;0
